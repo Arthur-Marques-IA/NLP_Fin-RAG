@@ -1,0 +1,12 @@
+# Dados baixados/gerados pelo notebook
+data/
+
+# Configuração local do MCP (caminhos da máquina)
+.mcp.json
+
+# Python / Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+.env
