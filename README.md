@@ -16,15 +16,19 @@ Em perguntas numéricas sobre relatórios financeiros, como a representação da
 |---|---|
 | Dados | FinQA, conjunto de teste oficial (1.147 perguntas) |
 | Modelos | Llama 3.1 8B Instruct, Qwen3-8B, Phi-4-mini-instruct |
-| Representações | Markdown, JSON, Linearizada (frase por célula), Seletiva (top-k linhas, Markdown) + Gold (diagnóstico) |
+| Representações | R0 Bruta (controle), R1 Markdown (referência), R2 JSON, R3 Linearizada (frase por célula), R4 Seletiva (top-k linhas, Markdown) + R5 Gold-tabela (diagnóstico) |
 | Fixos | texto do relatório, prompt, posição da pergunta, exemplos few-shot (do treino), temperatura 0 |
-| Métrica | acurácia numérica com tolerância de arredondamento (gabarito `exe_ans`) |
+| Métrica | acurácia de execução estrita (erro relativo ≤ 1%, gabarito `exe_ans`) + versão tolerante ao arredondamento como sensibilidade |
 | Custo | tokens de entrada pelo tokenizador de cada modelo; acurácia por mil tokens |
 | Cortes | nº de passos do programa (1, 2, 3+), origem da evidência (tabela/texto/ambos), tamanho da tabela |
 
 ## Estrutura
 
+A metodologia completa — representações comparadas, controles, métricas, estatística e verificações — está em **[docs/METODOLOGIA.md](docs/METODOLOGIA.md)**, que é a referência do projeto.
+
 ```
+docs/
+  METODOLOGIA.md                  # como o estudo é conduzido (referência)
 notebooks/
   01_dados_representacoes.ipynb   # dados, metadados, serializações, avaliação e tokens
 Engenharia de Contexto para RAG sobre Dados Tabulares.pdf   # proposta
@@ -33,10 +37,11 @@ Related_Work_RAG_Tabular_QA_Financeiro.pdf                  # revisão da litera
 
 ## Primeiros resultados (notebook 01)
 
-- **Composição do teste:** 654 perguntas de 1 passo, 409 de 2 e 84 de 3+; evidência em tabela (706), texto (283) ou ambos (158).
-- **Seleção lexical (k=3):** preserva todas as linhas do gabarito em 76,4% das 855 perguntas com linhas de dados no gabarito (recall médio 0,85).
-- **Avaliação:** o parser aceita o campo `answer` dos anotadores em 91,6% dos casos; o restante é ruído de anotação.
-- **Custo (contexto completo, relativo ao Markdown):** JSON 1,13×, Linearizada 1,16×, Seletiva 0,93×, Gold 0,88×. A tabela é uma fração pequena do contexto (~150–190 de ~900–1.000 tokens), então a economia da seleção é modesta.
+- **Composição do teste:** 654 perguntas de 1 passo e 493 de 2+ (84 com 3+); evidência em tabela (706), texto (283) ou ambos (158).
+- **k da seletiva escolhido no dev:** k = 4 (preserva todas as linhas do gabarito em 84,2% do dev). No teste, R4 coincide com R1 em 43% das perguntas; o subconjunto efetivo da H2 tem 488 perguntas (348 com seleção que preserva o gabarito, 140 que corta).
+- **Avaliação:** acurácia estrita (≤ 1%) e tolerante (arredondamento, teto de 5%); aplicada ao campo `answer` dos anotadores, aceita 82,3% e 90,0% — os anotadores arredondam muito, por isso o prompt pede 2 casas decimais.
+- **Verificações:** conteúdo igual em R0–R3, R3 = template do FinQA (99,7%), R4/R5 no formato de R1, seleção sem vazamento e texto fixo — todas passam no dev e no teste.
+- **Custo (contexto, relativo a R1):** R0 0,96×, R2 1,13×, R3 1,18×, R4 0,95× (0,90× no subconjunto efetivo), R5 0,88×. A tabela é uma fração pequena do contexto, então a economia da seleção é modesta.
 
 > Observação: o campo `ann_table_rows` do FinQA vem vazio em ~110 perguntas do teste; o notebook usa as chaves `table_i` de `gold_inds` como gabarito de linhas.
 
