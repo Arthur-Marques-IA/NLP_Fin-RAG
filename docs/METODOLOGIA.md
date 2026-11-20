@@ -143,7 +143,7 @@ Tudo abaixo é **idêntico entre as seis condições**, para que a representaç�
 | **Texto do relatório** | `pre_text` e `post_text` sem alteração, mesma posição em todas as condições |
 | **Instrução** | um único template em inglês (os dados são em inglês), com a pergunta **depois** do contexto |
 | **Few-shot** | 3 exemplos fixos do **treino** do FinQA (um de 1 passo com tabela, um de 2 passos com tabela + texto, um com evidência só no texto), escolhidos uma vez com semente fixa. **As tabelas dos exemplos são serializadas na mesma representação da condição** — senão o modelo vê Markdown nos exemplos e JSON na pergunta |
-| **Formato da saída** | raciocínio curto e última linha `Answer: <número>`, com 2 casas decimais, na unidade da tabela, porcentagens com `%`; sim/não como `Answer: yes` ou `Answer: no` |
+| **Formato da saída** | raciocínio curto e última linha `Answer: <número>`, com 2 casas decimais, na unidade da tabela, porcentagens com `%`; sim/não como `Answer: yes` ou `Answer: no`. O formato é pedido na instrução e repetido em um **lembrete de uma linha no fim do prompt**, igual em todas as condições |
 | **Decodificação** | gulosa (temperatura 0), mesmo `max_new_tokens` para todos (512) |
 | **Chat template** | o template oficial de cada modelo, com `add_generation_prompt=True` |
 | **Modo de raciocínio** | Qwen3 com `enable_thinking=False`, para que os três modelos gerem no mesmo regime e o custo de saída seja comparável |
@@ -177,7 +177,20 @@ Report:
 <contexto da condição>
 
 Question: <pergunta>
+
+Think step by step briefly, then end with the final line "Answer: <number>" (or "Answer: yes" / "Answer: no").
 ```
+
+**Lembrete de formato (última linha).** Entrou depois da primeira rodada na GPU, feita no dev. Sem ele, o Phi-4-mini (4 bits, R1) terminava parte das respostas sem a linha `Answer:`: dava o resultado em uma frase ou dizia que não era possível calcular. O texto foi escolhido entre três variantes, em **48 perguntas do dev fora das 150 do piloto** (44 numéricas e 4 de sim/não), com o parser da seção 6.1:
+
+| Variante (Phi-4-mini, 4 bits, R1) | Falhas de formato | Acertos (estrita) | Sim/não certos | Tokens de saída (média) | Saídas com até 15 tokens |
+|---|---|---|---|---|---|
+| sem lembrete | 15 | 18 | 1 de 4 | 122 | 7 |
+| A — `Remember to end with the final line "Answer: <number>".` | 4 | 24 | 2 de 4 | 122 | 4 |
+| **C — a adotada** (acima) | **3** | **27** | **4 de 4** | 162 | 0 |
+| D — C precedida de `The report has the data needed to answer.` e com `Show the calculation briefly` | 4 | 22 | 2 de 4 | 132 | 0 |
+
+A variante A fazia o modelo responder `Answer: 488.00%` e `Answer: 100%` a perguntas de sim ou não, porque só mencionava `<number>`; a C repete as duas formas. Uma variante anterior, que acrescentava "Always give a numeric answer", tinha zerado as falhas em 16 perguntas mas feito o modelo pular o raciocínio, e foi descartada. Critério de escolha: menos falhas de formato no Phi-4-mini, sem encurtar o raciocínio e sem piorar o Qwen3-8B. São 48 perguntas e uma única representação: quem decide se o prompt está apto é a V7, no piloto de 150 perguntas por modelo. As saídas brutas desta comparação no Phi-4-mini não foram preservadas (a sessão do Colab caiu antes de os resultados irem para o Drive); ficaram os totais da tabela. O lembrete faz parte do hash do template, então qualquer mudança nele invalida os arquivos já gerados.
 
 ### 3.1 Exemplos few-shot
 
@@ -214,7 +227,7 @@ Para que nenhuma decisão seja ajustada olhando o resultado do teste:
 | Split | Tamanho | Uso |
 |---|---|---|
 | **train** | 6.251 | apenas para sortear os 3 exemplos few-shot |
-| **dev** | 883 | escolher *k* da seletiva; piloto (≈150 perguntas) para validar o prompt, o parser e a taxa de falha de formato |
+| **dev** | 883 | escolher *k* da seletiva; ajustar o prompt e o parser (primeira rodada na GPU); piloto (≈150 perguntas) para validar o prompt, o parser e a taxa de falha de formato |
 | **test** | 1.147 | **execução final, uma vez**, com tudo congelado |
 
 **Critério para k (fixado antes de olhar o dev):** entre *k* ∈ {1, …, 5}, o menor *k* em que a seletiva preserva **todas** as linhas do gabarito em ≥ 80% das perguntas do dev com linhas de dados no gabarito; se nenhum atingir, *k* = 5.
@@ -249,11 +262,18 @@ São dois portes (≈8B e ≈4B), não três modelos de ~8B. O texto do trabalho
 
 Gabarito: `exe_ans`, o resultado da execução do programa anotado (como a acurácia de execução do FinQA). O campo `answer`, escrito à mão, tem ruído e não é usado como gabarito.
 
-**Extração da resposta:** lê-se **somente o texto após o último `Answer:`**. Se não houver `Answer:` ou número legível ali, a saída conta como **falha de formato** (e como erro na acurácia).
+**Extração da resposta:** lê-se **somente a linha após o último `Answer:`**, e ela tem de **começar pelo número** (são aceitos antes dele `$`, parêntese, sinal, negrito e "approximately"). Regras, todas definidas no dev antes de qualquer resultado do teste:
+
+- se a linha é uma conta (`Answer: 30 + 29 = 59`), vale o que vem depois do último `=` (ou `≈`);
+- uma frase no lugar do número (`Answer: The amount cannot be determined after October 29, 2011`) **não** é resposta, mesmo que contenha números;
+- sem `Answer:`, ou sem número no início da linha, a saída conta como **falha de formato** (e como erro na acurácia).
+
+A primeira versão do parser lia o primeiro número em qualquer ponto do texto após `Answer:`. Na primeira rodada na GPU (dev), isso leu `30` em `Answer: $ 30 + $ 29 + … = $ 560 million` e `29` em uma frase que citava "October 29, 2011". As regras acima corrigem os dois casos. O custo é conhecido: uma resposta correta escrita como frase (`Answer: Asia-Pacific contributed 8.97% of the total operating income in 2015.`) passa a contar como falha de formato. A regra vale igualmente para todas as condições e modelos, e o lembrete de formato no fim do prompt (seção 3) existe para reduzir esses casos.
 
 **Acurácia estrita (principal)** — correta se o erro relativo for ≤ 1% em uma destas escalas:
 - `pred` ≈ `gold`;
-- `pred` ≈ `gold × 100` (porcentagem escrita como número: `14.46` ou `14.46%` para `0.1446`).
+- `pred` ≈ `gold × 100` (porcentagem escrita como número: `14.46` ou `14.46%` para `0.1446`);
+- se a resposta traz a unidade por extenso (*thousand, million, billion, trillion*), também `pred × unidade` ≈ `gold` (`7,301 million` para `7301000000`). O número sem a unidade continua valendo (`9119 million` para `9119`, quando a tabela já está em milhões).
 
 A escala `pred ≈ gold ÷ 100` **não** é aceita: ela casaria uma razão com um valor em milhões.
 
@@ -275,6 +295,11 @@ Casos que o parser precisa acertar (testes unitários do notebook):
 | `Answer: 0.94` | 94.0 | ✗ | ✗ |
 | `There was no change. Answer: yes` | yes | ✓ | ✓ |
 | `The answer is 94` (sem `Answer:`) | 94.0 | ✗ (falha de formato) | ✗ |
+| `Answer: $ 30 + $ 29 = $ 59 million` | 59.0 | ✓ | ✓ |
+| `Answer: $7,301 million` | 7301000000.0 | ✓ | ✓ |
+| `Answer: 9119 million` | 9119.0 | ✓ | ✓ |
+| `Answer: 7301.00` | 7301000000.0 | ✗ | ✗ |
+| `Answer: The amount cannot be determined after October 29, 2011.` | 2.33 | ✗ (falha de formato) | ✗ |
 
 ### 6.2 Custo
 
@@ -287,7 +312,7 @@ O custo da seleção (R4) é zero em tokens de LLM e é declarado como tal.
 
 ### 6.3 Falha de formato
 
-Fração de saídas sem `Answer:` legível, por modelo × representação. Uma representação que confunde o modelo a ponto de ele não seguir o formato é um resultado em si, e precisa ser separada de erro de conteúdo.
+Fração de saídas sem `Answer:` legível (sem a marca, ou com uma frase no lugar do número), por modelo × representação. Uma representação que confunde o modelo a ponto de ele não seguir o formato é um resultado em si, e precisa ser separada de erro de conteúdo.
 
 ### 6.4 Tipo de erro (extração × cálculo)
 
@@ -366,7 +391,7 @@ Estas verificações garantem que os métodos comparados são o que dizemos que 
 | V3 | **Sem vazamento na seleção:** `select_rows` recebe só `(table, question, k)`, e a seletiva não muda quando o gabarito é removido do exemplo | notebook 01 | 0 falhas |
 | V4 | **Texto fixo:** fora do bloco da tabela, o contexto é idêntico nas seis condições | notebook 01 | 0 falhas |
 | V5 | **Few-shot coerente:** o sorteio com a semente reproduz os IDs fixos; os exemplos (e seus documentos) não estão no teste nem no dev; a resposta de cada exemplo é correta na métrica estrita e seus operandos aparecem no contexto em todas as condições; entre condições, só os blocos de tabela do prompt mudam | notebook 02 | passa |
-| V6 | **Parser:** todos os casos da tabela 6.1 (e extras) passam | notebook 01 | 19 casos OK |
+| V6 | **Parser:** todos os casos da tabela 6.1 (e extras) passam | notebook 01 | 37 casos OK |
 | V7 | **Piloto no dev:** falha de formato < 5% em cada modelo com R1; se passar disso, o prompt é ajustado **no dev** e congelado. O piloto também mede saídas cortadas no limite de tokens e saídas em que o modelo continua escrevendo depois da resposta (o parser lê o último `Answer:`) | notebook 02 | implementado; **falta rodar na GPU** |
 
 As verificações já pegaram três defeitos que mudariam os resultados: a ordem invertida do template da R3, a perda total de conteúdo de R2/R3 em tabelas de uma linha só, e o colapso de espaços dentro de valores de célula.
@@ -376,11 +401,12 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 ## 9. Execução e registro
 
 - Total: 1.147 perguntas × 6 condições × 3 modelos = **20.646 gerações**.
-- Resultados salvos em JSONL no Google Drive, um arquivo por modelo × condição, com retomada automática: se a sessão do Colab cair, as perguntas já feitas não são repetidas.
+- **Checkpoints.** Tudo o que é gerado fica na pasta `NLP - Checkpoints/results` do Google Drive (nome em `DRIVE_FOLDER`, em `src/finrag.py`): um JSONL por modelo × condição, gravado **a cada lote** (4 perguntas), mais os arquivos de estado (`frozen_config.json`, `pilot_dev/revisions.json`, `test/sessions.jsonl`). Se a sessão do Colab cair, basta abrir o notebook e rodar de novo: as perguntas já gravadas são puladas, um modelo completo nem é carregado, e perde-se no máximo o lote em andamento. Uma linha cortada no fim do arquivo é ignorada e refeita; os arquivos de estado são gravados em arquivo temporário e trocados no fim. `tests/test_retomada.py` simula três quedas seguidas e confere que o resultado é idêntico ao de uma execução sem interrupção.
 - Campos de cada registro: `id`, `model`, `rep`, `k`, `prompt_tokens`, `context_tokens`, `output_tokens`, `raw_output`, `parsed_answer`, `format_ok`, `correct_strict`, `correct_lenient`, `error_type`, `latency_s`, e também `split`, `code`, `hit_max_new_tokens`, `batch_size`, `precision` e `prompt_hash`.
 - Metadados da execução: GPU, versões das bibliotecas, revisão de cada modelo, semente dos few-shot, *k* escolhido, hash do template de prompt.
 - **Congelamento.** Ao fim do piloto, o notebook 02 grava `frozen_config.json` com o hash do template, o hash de todos os prompts do teste (1.147 × 6), os IDs dos exemplos, *k*, `max_new_tokens`, a precisão, o tamanho do lote e a revisão de cada modelo. O notebook 03 só roda se o código atual reproduzir esses hashes, e usa a precisão e o lote congelados — nunca os detecta por sessão. Depois que existe qualquer resultado do teste, o congelamento não pode mudar.
 - **Lotes.** A geração é feita em lotes, com *padding* à esquerda. Os lotes são definidos pela lista completa de perguntas, ordenada do prompt mais longo para o mais curto, de modo que interromper e retomar não muda a composição dos lotes. Isso importa porque, em casos de quase empate entre tokens, a saída de uma pergunta pode mudar conforme o *padding* do lote em que ela cai. Se faltar memória, o lote é dividido ao meio e o tamanho usado fica registrado.
+- **Parser e resultados gravados.** Os campos de acerto de cada registro são calculados na hora da geração. O relatório do piloto reavalia a saída bruta com o parser atual (é no piloto que o parser é validado); depois que existe resultado do teste o parser não muda, e o notebook 04 confere isso reavaliando todas as saídas.
 - **Código.** As representações, o parser, o prompt e a geração ficam em `src/finrag.py`, usado pelos notebooks 02–04. As partes que vêm do notebook 01 são conferidas por `tests/test_consistencia.py` (saídas idênticas em todas as tabelas do dev e do teste).
 
 ---
@@ -392,6 +418,7 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 - A tabela ocupa uma fração pequena do contexto (~150–190 de ~890–1.000 tokens no Markdown), então diferenças de custo entre representações tendem a ser modestas — isso é um achado, não uma falha. Contexto médio relativo a R1, no teste: R0 0,96×, R2 1,13×, R3 1,18×, R4 0,95× (0,90× no subconjunto efetivo), R5 0,88× (Qwen3 e Phi-4-mini; Llama pendente de `HF_TOKEN`).
 - Se a execução for em 4 bits, os resultados absolutos ficam abaixo dos de bf16; a comparação **entre representações dentro do mesmo modelo** continua válida.
 - A heurística de tipo de erro é aproximada e validada por amostra.
+- Em 5 perguntas do teste o programa do gabarito termina convertendo a unidade (× 1.000 ou × 1.000.000), e o `exe_ans` fica em unidades enquanto a tabela está em milhares ou milhões. Nelas, a resposta na unidade da tabela só é aceita se trouxer a unidade por extenso (`35 million`); `35.00` conta como erro. São as mesmas perguntas nas seis condições, então a comparação entre representações não é afetada.
 
 ---
 
@@ -407,6 +434,8 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 | Qwen3 sem modo de raciocínio | com raciocínio | Mesmo regime de geração nos três modelos; com raciocínio, o custo de saída do Qwen não seria comparável |
 | Mesma precisão para todos os modelos | 4 bits só nos de 8B | Evita confundir porte do modelo com quantização |
 | Métrica estrita como principal | só a tolerante | A tolerante dá margem a respostas pouco precisas; serve como análise de sensibilidade |
+| Resposta = número no início da linha do `Answer:` | primeiro número em qualquer ponto após `Answer:` | A regra antiga lia números de contas e de frases (`30` em `30 + 29 = 59`); a nova lê o que o modelo deu como resposta e conta frase como falha de formato |
+| GPU T4 com 4 bits (NF4), em várias sessões com retomada | TPU v5e-1 do Colab | A TPU tem 16 GB por chip e o `bitsandbytes` não roda nela: os modelos de 8B não cabem em bf16 e a condição "4 bits" não pode ser reproduzida. Além disso, a geração com prompts de tamanhos diferentes recompila a cada formato novo. Avaliação feita pela documentação, sem medir |
 
 ---
 
@@ -417,12 +446,13 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 | Download do dev e do teste; metadados (passos 1 × 2+, evidência, tamanho) | feito (notebook 01) |
 | R0–R5, com tabelas de uma linha normalizadas e R3 no template do FinQA | feito (notebook 01) |
 | Escolha de *k* no dev pela regra da seção 4 → **k = 4** | feito (notebook 01) |
-| Parser: só após o último `Answer:`, falha de formato, estrita (×1, ×100) e tolerante (teto de 5%) | feito (notebook 01) |
+| Parser: número no início da linha após o último `Answer:`, contas com `=`, unidade por extenso, falha de formato, estrita (×1, ×100) e tolerante (teto de 5%) | feito (notebook 01); revisto depois da primeira rodada na GPU |
 | Verificações V1, V1b, V2, V3, V4, V6 | feito, todas passam (notebook 01) |
 | Contagem de tokens do contexto, seis condições | feito para Qwen3 e Phi-4-mini; Llama **pendente** de `HF_TOKEN` |
 | Módulo compartilhado `src/finrag.py`, idêntico ao notebook 01 nas partes copiadas | feito (`tests/test_consistencia.py` passa) |
-| Prompt e few-shot (V5) | feito (notebook 02); V5 passa |
+| Prompt e few-shot (V5) | feito (notebook 02); V5 passa. Lembrete de formato acrescentado depois da primeira rodada na GPU |
 | Tokens totais de entrada, por modelo × representação | código pronto (notebook 02); **falta rodar** no teste inteiro com os três tokenizadores (o do Llama exige `HF_TOKEN`) |
 | Piloto no dev (V7), tokens de saída, congelamento | código pronto (notebook 02); **falta rodar na GPU** |
+| Checkpoints no Google Drive e retomada | feito; `tests/test_retomada.py` passa |
 | Inferência no teste, com retomada | código pronto (notebook 03); **falta rodar na GPU** |
 | Análise estatística, cortes, tipo de erro, custo | código pronto (notebook 04), testado só com resultados sintéticos; **falta rodar com os resultados reais** |

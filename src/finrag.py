@@ -214,30 +214,45 @@ def gold_preserved(ex, k):
 # 4. Avaliação — acurácia estrita e tolerante (cópia do notebook 01, seção 4)
 # =====================================================================================
 ANSWER_RE = re.compile(r"answer\s*[:：]", re.I)
-NUM_RE = re.compile(r"\(?\s*-?\s*\$?\s*(?:\d[\d,]*(?:\.\d+)?|\.\d+)\s*%?\s*\)?")
+NUM_RE = re.compile(r"\(?\s*[-−]?\s*\$?\s*[-−]?\s*(?:\d[\d,]*(?:\.\d+)?|\.\d+)\s*%?\s*\)?")
+LEAD_RE = re.compile(r"[\s*_`\"'\[]*(?:(?:approximately|approx\.?|about|around|roughly)\s+|[~≈]\s*)?", re.I)
+UNIT_RE = re.compile(r"\s*(thousand|million|billion|trillion)\b", re.I)
+UNITS = {"thousand": 1e3, "million": 1e6, "billion": 1e9, "trillion": 1e12}
 REL_TOL_STRICT = 0.01
 REL_TOL_LENIENT = 0.05
 
 def answer_segment(text):
-    """Texto após o ÚLTIMO 'Answer:'; None se não houver."""
+    """Linha da resposta: o texto após o ÚLTIMO 'Answer:', até o fim da linha (a primeira linha
+    não vazia, se o modelo quebrou a linha depois dos dois-pontos). None se não houver 'Answer:'."""
     if text is None:
         return None
     ms = list(ANSWER_RE.finditer(str(text)))
-    return str(text)[ms[-1].end():] if ms else None
+    if not ms:
+        return None
+    lines = [l for l in str(text)[ms[-1].end():].splitlines() if l.strip()]
+    return lines[0] if lines else ""
 
 def parse_number(segment):
-    """(valor, casas_decimais) do primeiro número do segmento; None se não houver."""
+    """(valor, casas_decimais, fator_da_unidade) da linha da resposta; None se ela não começa por um número.
+
+    - o número tem de vir no INÍCIO da linha (depois de `$`, parêntese, sinal, negrito ou "approximately").
+      Uma frase ("The amount cannot be determined after October 29") não é resposta, mesmo com números;
+    - se a linha é uma conta ("30 + 29 = 59"), vale o que vem depois do último "=" (ou "≈");
+    - fator_da_unidade é 1e3, 1e6, 1e9 ou 1e12 se o número vem seguido de thousand/million/billion/trillion;
+      None caso contrário."""
     if segment is None:
         return None
-    m = NUM_RE.search(segment)
+    seg = re.split("[=≈]", segment)[-1]
+    m = NUM_RE.match(seg, LEAD_RE.match(seg).end())
     if not m:
         return None
     tok = m.group(0).strip()
-    neg = (tok.startswith("(") and tok.endswith(")")) or tok.lstrip("( ").startswith("-")
+    neg = (tok.startswith("(") and tok.endswith(")")) or bool(re.match(r"[($\s]*[-−]", tok))
     digits = re.sub(r"[^\d.]", "", tok)
     decimals = len(digits.split(".")[1]) if "." in digits else 0
     val = float(digits)
-    return (-val if neg else val), decimals
+    unit = UNIT_RE.match(seg, m.end())
+    return (-val if neg else val), decimals, (UNITS[unit.group(1).lower()] if unit else None)
 
 def parse_yes_no(segment):
     if segment is None:
@@ -258,8 +273,10 @@ def evaluate(pred_text, gold):
     p = parse_number(seg)
     if p is None:
         return {"format_ok": False, "strict": False, "lenient": False, "pred": None}
-    pred, dec = p
+    pred, dec, unit = p
     scales = (gold, gold * 100)                    # x1 e porcentagem escrita como número
+    if unit:                                       # "7,301 million" também vale para 7301000000
+        scales += (gold / unit,)
     strict = any(_rel_err(pred, g) <= REL_TOL_STRICT for g in scales)
     lenient = strict or any(
         pred != 0 and (pred > 0) == (g > 0)
@@ -289,6 +306,25 @@ PARSER_TESTS = [
     ("Answer: no", "yes", False, False, True),
     ("The answer is 94", 94.0, False, False, False),
     ("Answer: cannot be determined", 94.0, False, False, False),
+    # Casos vistos nas saídas reais dos modelos (dev), que a primeira versão do parser lia errado
+    ("Answer: $ 30 + $ 29 + $ 94 + $ 62 + $ 145 + $ 23 + $ 78 = $ 560 million", 560.0, True, True, True),
+    ("0.2163 * 100 = 21.63%\nAnswer: 2313 / 10690 = 21.63%", 0.21637, True, True, True),
+    ("Answer: 524804 / 531822 ≈ 0.9867", 0.98680, True, True, True),
+    ("Answer: $7,301 million", 7301000000.0, True, True, True),
+    ("Answer: 9119 million", 9119.0, True, True, True),
+    ("Answer: 7301.00", 7301000000.0, False, False, True),
+    ("Answer: 2.3 billion", 2300.0, False, False, True),
+    ("Answer: The amount cannot be determined for the period after October 29, 2011.", 2.3345, False, False, False),
+    ("Answer: The revenues were $2573 million for 2016 and $3781 million for 2015.", 2573.0, False, False, False),
+    ("Answer: 20.93% of the owned facilities are located in Europe.", 0.2093, True, True, True),
+    ("Answer: -$444.20", -444.2, True, True, True),
+    ("Answer: $ -444.20", -444.2, True, True, True),
+    ("Answer: approximately 5.2%", 0.052, True, True, True),
+    ("Answer: **94.00**", 94.0, True, True, True),
+    ("Answer:\n94.00", 94.0, True, True, True),
+    ("Answer: 94.00\nNote: in 2015 it was 80.", 94.0, True, True, True),
+    ("Answer: 80\nIn 2015 it was 94.", 94.0, False, False, True),
+    ("Answer: no", 94.0, False, False, False),
 ]
 
 
@@ -648,6 +684,11 @@ INSTRUCTION = (
 )
 EXAMPLE_HEADER = "=== Example {i} ==="
 TARGET_HEADER = "=== Now answer this one ==="
+# Última linha do prompt, depois da pergunta-alvo. Sem ela, o Phi-4-mini terminava quase um terço das
+# respostas sem a linha "Answer:". O texto foi escolhido entre três variantes, em 48 perguntas do dev
+# fora do piloto (seção 3 da metodologia); citar sim/não evita "Answer: 100%" em pergunta de sim ou não.
+FORMAT_REMINDER = ('Think step by step briefly, then end with the final line "Answer: <number>" '
+                   '(or "Answer: yes" / "Answer: no").')
 MAX_NEW_TOKENS = 512
 
 
@@ -664,6 +705,7 @@ def build_prompt(ex, rep, shots, k=K_FROZEN):
         parts.append(f"{EXAMPLE_HEADER.format(i=i)}\n{format_item(shot, rep, k)}\n\n"
                      f"{FEWSHOT_SOLUTIONS[shot['id']]}")
     parts.append(f"{TARGET_HEADER}\n{format_item(ex, rep, k)}")
+    parts.append(FORMAT_REMINDER)
     return "\n\n".join(parts)
 
 
@@ -716,8 +758,9 @@ def check_fewshot(train, dev, test, k=K_FROZEN):
 
 
 def prompt_hash(k=K_FROZEN):
-    """Identifica o template: instrução, cabeçalhos, exemplos, respostas dos exemplos, k e limite de saída."""
-    blob = json.dumps([INSTRUCTION, EXAMPLE_HEADER, TARGET_HEADER, FEWSHOT_IDS,
+    """Identifica o template: instrução, cabeçalhos, lembrete de formato, exemplos, respostas dos
+    exemplos, k e limite de saída."""
+    blob = json.dumps([INSTRUCTION, EXAMPLE_HEADER, TARGET_HEADER, FORMAT_REMINDER, FEWSHOT_IDS,
                        sorted(FEWSHOT_SOLUTIONS.items()), k, MAX_NEW_TOKENS], ensure_ascii=False)
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
 
@@ -941,14 +984,76 @@ def result_path(results_dir, split, model_name, rep):
     return pathlib.Path(results_dir) / split / f"{model_name}__{rep}.jsonl"
 
 
+DRIVE_FOLDER = "NLP - Checkpoints"       # pasta do Google Drive onde ficam os resultados (checkpoints)
+
+
+def drive_results_dir(folder=DRIVE_FOLDER, mount="/content/drive", max_depth=2):
+    """Pasta `results/` dentro da pasta `folder` do Google Drive já montado.
+
+    Procura `folder` em "Meu Drive" e nas pastas dele (`max_depth` níveis; atalhos para pastas compartilhadas
+    aparecem como pastas). Tudo o que o estudo grava fica aqui, então uma sessão nova do Colab
+    continua de onde a anterior parou. Se a pasta não existe, PARA com um erro: criar outra pasta
+    em silêncio faria uma segunda conta gravar os resultados no próprio Drive, longe dos demais."""
+    root = pathlib.Path(mount) / "MyDrive"
+    assert root.is_dir(), f"Google Drive não montado em {mount}"
+    level, found = [root], None
+    for _ in range(max_depth):
+        nxt = []
+        for d in level:
+            try:
+                subdirs = sorted(c for c in d.iterdir() if c.is_dir() and not c.name.startswith("."))
+            except OSError:
+                continue
+            hits = [c for c in subdirs if c.name == folder]
+            if hits:
+                found = hits[0]
+                break
+            nxt += subdirs
+        if found:
+            break
+        level = nxt
+    if found is None:
+        raise FileNotFoundError(
+            f"Pasta '{folder}' não encontrada no Google Drive desta conta. Se ela é de outra pessoa, abra o link "
+            f"da pasta e use Organizar > Adicionar atalho > Meu Drive; se é sua, crie-a em Meu Drive. Para gravar "
+            f"em outro lugar, defina FINRAG_DRIVE_FOLDER (nome da pasta) ou FINRAG_RESULTS_DIR (caminho completo).")
+    out = found / "results"
+    out.mkdir(parents=True, exist_ok=True)
+    return out
+
+
+def progress(results_dir, split, models, expected):
+    """Andamento de um split: perguntas já gravadas por modelo × condição, como DataFrame.
+    `expected` é o total por condição: um inteiro ou um dicionário representação -> total."""
+    import pandas as pd
+    total = expected if isinstance(expected, dict) else {rep: expected for rep in REPRESENTATIONS}
+    table = {name: {f"{REP_CODE[rep]} (de {total[rep]})": len(read_jsonl(result_path(results_dir, split, name, rep)))
+                    for rep in REPRESENTATIONS} for name in models}
+    return pd.DataFrame(table).T
+
+
+def _progress_bar(total, initial, desc):
+    """Barra de progresso (tqdm). Sem tqdm instalado, devolve None e o andamento sai em linhas de texto."""
+    try:
+        from tqdm.auto import tqdm
+    except ImportError:
+        return None
+    return tqdm(total=total, initial=initial, desc=desc, unit="perg", dynamic_ncols=True, mininterval=2)
+
+
 def run_condition(tokenizer, model, model_name, examples, rep, shots, out_path, split, precision,
-                  k=K_FROZEN, batch_size=4, max_new_tokens=None, log_every=10):
+                  k=K_FROZEN, batch_size=4, max_new_tokens=None, log_every=10, save_every=1):
     """Gera as respostas de um modelo em uma condição e grava em JSONL, com retomada.
 
     Os lotes são definidos pela lista COMPLETA de perguntas, ordenada do prompt mais longo para o
     mais curto; ao retomar, os lotes já gravados são pulados e os outros têm a mesma composição
     de antes. Assim, interromper e retomar não muda os resultados (com o mesmo `batch_size`).
-    Recusa continuar um arquivo gravado com outro prompt ou outra precisão."""
+    Recusa continuar um arquivo gravado com outro prompt ou outra precisão.
+
+    `save_every`: grava no arquivo a cada N lotes (1 = a cada lote). Uma queda brusca da sessão perde
+    no máximo N lotes; uma interrupção normal (erro ou parada da célula) grava antes de sair. A barra
+    de progresso mostra perguntas feitas, ritmo, tempo restante e quantas já estão gravadas."""
+    assert save_every >= 1, save_every
     phash = prompt_hash(k)
     previous = read_jsonl(out_path)
     stale = {(r.get("prompt_hash"), r.get("precision")) for r in previous} - {(phash, precision)}
@@ -963,24 +1068,40 @@ def run_condition(tokenizer, model, model_name, examples, rep, shots, out_path, 
     batches = [items[i:i + batch_size] for i in range(0, len(items), batch_size)]
     todo = [b for b in batches if any(it[1] not in done for it in b)]
     print(f"[{model_name} | {REP_CODE[rep]} {rep} | {split}] {len(done)}/{len(items)} já feitas, "
-          f"{len(todo)} lotes a rodar (lote = {batch_size})")
-    t0, n_new = time.time(), 0
-    for bi, batch in enumerate(todo, start=1):
-        gens = _generate_safe(tokenizer, model, model_name, [it[3] for it in batch], max_new_tokens)
-        records = []
-        for (n_tok, ex_id, ex, _), gen in zip(batch, gens):
-            assert gen["prompt_tokens"] == n_tok, "contagem de tokens do prompt divergiu (truncamento?)"
-            if ex_id in done:
-                continue
-            ctx_tokens = count_tokens(tokenizer, build_context(ex, rep, k))
-            records.append(make_record(ex, split, model_name, rep, k, gen, ctx_tokens, precision, phash))
-        append_jsonl(out_path, records)
-        done |= {r["id"] for r in records}
-        n_new += len(records)
-        if bi % log_every == 0 or bi == len(todo):
-            rate = (time.time() - t0) / max(n_new, 1)
-            left = sum(1 for b in todo[bi:] for it in b if it[1] not in done)
-            print(f"   lote {bi}/{len(todo)} | {rate:.1f} s/pergunta | faltam ~{left * rate / 60:.0f} min")
+          f"{len(todo)} lotes a rodar (lote = {batch_size}, gravação a cada {save_every} lote(s))")
+    if not todo:
+        return previous
+    bar = _progress_bar(len(items), len(done), f"{model_name} {REP_CODE[rep]}")
+    t0, n_new, n_saved, buffer = time.time(), 0, len(done), []
+    try:
+        for bi, batch in enumerate(todo, start=1):
+            gens = _generate_safe(tokenizer, model, model_name, [it[3] for it in batch], max_new_tokens)
+            records = []
+            for (n_tok, ex_id, ex, _), gen in zip(batch, gens):
+                assert gen["prompt_tokens"] == n_tok, "contagem de tokens do prompt divergiu (truncamento?)"
+                if ex_id in done:
+                    continue
+                ctx_tokens = count_tokens(tokenizer, build_context(ex, rep, k))
+                records.append(make_record(ex, split, model_name, rep, k, gen, ctx_tokens, precision, phash))
+            buffer += records
+            done |= {r["id"] for r in records}
+            n_new += len(records)
+            if bi % save_every == 0 or bi == len(todo):
+                append_jsonl(out_path, buffer)
+                n_saved, buffer = n_saved + len(buffer), []
+            if bar is not None:
+                bar.set_postfix_str(f"gravadas {n_saved}", refresh=False)
+                bar.update(len(records))
+            elif bi % log_every == 0 or bi == len(todo):
+                rate = (time.time() - t0) / max(n_new, 1)
+                left = len(items) - len(done)
+                print(f"   lote {bi}/{len(todo)} | {rate:.1f} s/pergunta | faltam ~{left * rate / 60:.0f} min | "
+                      f"gravadas {n_saved}/{len(items)}")
+    finally:
+        if buffer:                                   # erro ou parada da célula: grava o que já foi gerado
+            append_jsonl(out_path, buffer)
+        if bar is not None:
+            bar.close()
     return read_jsonl(out_path)
 
 
@@ -1003,9 +1124,16 @@ def git_sha(repo_dir="."):
 
 
 def save_json(path, obj):
+    """Grava em arquivo temporário e troca no fim: se a sessão cair no meio, o arquivo antigo fica inteiro."""
+    import os
     path = pathlib.Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp = path.with_name(path.name + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(json.dumps(obj, ensure_ascii=False, indent=2))
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
 
 
 def load_json(path):

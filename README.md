@@ -29,6 +29,7 @@ A metodologia completa — representações comparadas, controles, métricas, es
 ```
 docs/
   METODOLOGIA.md                  # como o estudo é conduzido (referência)
+  EXECUCAO_COLAB.md               # roteiro para rodar o piloto e o teste no Colab (ambiente, passos, retomada)
 notebooks/
   01_dados_representacoes.ipynb   # dados, metadados, serializações, avaliação e tokens do contexto
   02_prompt_piloto.ipynb          # few-shot (V5), prompt, tokens de entrada, piloto no dev (V7), congelamento
@@ -38,6 +39,7 @@ src/
   finrag.py                       # código compartilhado pelos notebooks 02–04
 tests/
   test_consistencia.py            # confere que src/finrag.py e o notebook 01 dão as mesmas saídas
+  test_retomada.py                # simula quedas de sessão e confere que a retomada não muda os resultados
 Engenharia de Contexto para RAG sobre Dados Tabulares.pdf   # proposta
 Related_Work_RAG_Tabular_QA_Financeiro.pdf                  # revisão da literatura
 ```
@@ -49,7 +51,9 @@ Related_Work_RAG_Tabular_QA_Financeiro.pdf                  # revisão da litera
 | 03 | sim | `frozen_config.json` | `test/<modelo>__<representação>.jsonl` |
 | 04 | não | `test/*.jsonl` | `analise/*.csv` e `analise/fig*.png` |
 
-No Colab, a pasta de resultados é `MyDrive/NLP_Fin-RAG/results` no Google Drive; fora dele, `results/` na raiz do repositório (ou a pasta indicada em `FINRAG_RESULTS_DIR`).
+No Colab, a pasta de resultados é `NLP - Checkpoints/results` no Google Drive (o nome da pasta está em `DRIVE_FOLDER`, em `src/finrag.py`, e pode ser trocado pela variável de ambiente `FINRAG_DRIVE_FOLDER`); fora dele, `results/` na raiz do repositório (ou a pasta indicada em `FINRAG_RESULTS_DIR`).
+
+**Se a sessão do Colab cair:** abra o mesmo notebook e rode tudo de novo. Os resultados são gravados no Drive a cada lote de 4 perguntas; o que já existe é pulado e a geração continua do ponto em que parou.
 
 ## Primeiros resultados (notebook 01)
 
@@ -63,8 +67,10 @@ No Colab, a pasta de resultados é `MyDrive/NLP_Fin-RAG/results` no Google Drive
 
 ## Como rodar
 
-1. Abra o notebook no Google Colab com runtime **GPU** (T4 ou superior). O notebook 04 roda em CPU.
-2. Para o Llama 3.1 (modelo *gated*), adicione um token do Hugging Face com acesso ao modelo em **Secrets** do Colab com o nome `HF_TOKEN`.
+O passo a passo para quem vai executar — qual ambiente escolher, preparação da conta, o que fazer se a sessão cair — está em **[docs/EXECUCAO_COLAB.md](docs/EXECUCAO_COLAB.md)**. Em resumo:
+
+1. Abra o notebook no Google Colab com runtime **GPU** (A100 ou G4 de preferência; T4 funciona em 4 bits). As TPUs não servem. O notebook 04 roda em CPU.
+2. Para o Llama 3.1 (modelo *gated*), adicione um token do Hugging Face com acesso ao modelo em **Secrets** do Colab com o nome `HF_TOKEN`. O token nunca entra no código: o repositório é público.
 3. Execute as células em ordem. O FinQA é baixado do repositório oficial ([czyssrs/FinQA](https://github.com/czyssrs/FinQA)) para `data/`.
 
 Os notebooks 02–04 importam `src/finrag.py`. No Colab, eles **clonam este repositório do GitHub**, então o que roda lá é o que está publicado: faça `git push` antes de abrir o notebook.
@@ -98,7 +104,7 @@ Instalar como ferramenta (em vez de `uvx git+...`) evita o timeout de 30 s na in
 
 ## Estado e próximos passos
 
-O código dos notebooks 02–04 está pronto, mas **ainda não foi executado com os modelos reais**: o laço de geração foi testado só com um modelo minúsculo em CPU, e a análise, só com resultados sintéticos. Falta:
+O código dos notebooks 02–04 está pronto. Na GPU (T4, 4 bits) já rodaram as seções 1 a 4 do notebook 02 e testes curtos de geração com o Phi-4-mini e o Qwen3-8B no dev, que levaram à correção do parser e ao lembrete de formato no prompt. O piloto completo e o teste **ainda não foram executados**; a análise foi testada só com resultados sintéticos. Falta:
 
 1. Rodar o piloto no dev (notebook 02) na GPU, com `HF_TOKEN` para incluir o Llama 3.1, e conferir a V7.
 2. Rodar o teste (notebook 03).
