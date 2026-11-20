@@ -147,7 +147,7 @@ Tudo abaixo é **idêntico entre as seis condições**, para que a representaç�
 | **Decodificação** | gulosa (temperatura 0), mesmo `max_new_tokens` para todos (512) |
 | **Chat template** | o template oficial de cada modelo, com `add_generation_prompt=True` |
 | **Modo de raciocínio** | Qwen3 com `enable_thinking=False`, para que os três modelos gerem no mesmo regime e o custo de saída seja comparável |
-| **Precisão numérica** | **a mesma para os três modelos.** Preferência: bf16 em GPU L4/A100. Na T4 (15 GB): 4 bits NF4 para **todos**, inclusive o Phi-4-mini. Misturar 4 bits nos de 8B com fp16 no Phi confundiria a comparação entre modelos |
+| **Precisão numérica** | **a mesma para os três modelos.** Preferência: bf16 em GPU L4/A100. Na T4 (15 GB): 4 bits NF4 para **todos**, inclusive o Phi-4-mini, com as partes não quantizadas e as ativações em fp16 (a T4 não acelera bf16). Misturar 4 bits nos de 8B com fp16 no Phi confundiria a comparação entre modelos |
 | **Versões** | revisão (commit hash) de cada modelo no Hugging Face, versões de `transformers`/`torch`/`bitsandbytes` registradas no início da execução |
 
 Template de prompt (a ser congelado após o piloto no dev). É **uma única mensagem de usuário**, igual para os três modelos:

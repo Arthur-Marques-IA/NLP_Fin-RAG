@@ -790,6 +790,11 @@ def load_model(model_name, precision, hf_token=None, revision=None):
         from transformers import BitsAndBytesConfig
         kwargs["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_quant_type="nf4", bnb_4bit_compute_dtype=torch.float16)
+        # As partes não quantizadas (embeddings, normalizações) e as ativações ficam em fp16, o mesmo
+        # tipo do cálculo dos pesos de 4 bits. Sem isso, o transformers 5 carrega no tipo do checkpoint
+        # (bf16), que a T4 não acelera: no Phi-4-mini medimos o dobro do tempo e 13,5 GB em vez de
+        # 5,7 GB de pico num lote de 4 prompts de ~2.900 tokens.
+        kwargs[dtype_key] = torch.float16
         kwargs["device_map"] = {"": 0}
     elif precision == "bf16":
         kwargs[dtype_key] = torch.bfloat16
