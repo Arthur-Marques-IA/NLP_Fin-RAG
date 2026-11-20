@@ -150,7 +150,7 @@ Tudo abaixo é **idêntico entre as seis condições**, para que a representaç�
 | **Precisão numérica** | **a mesma para os três modelos.** Preferência: bf16 em GPU L4/A100. Na T4 (15 GB): 4 bits NF4 para **todos**, inclusive o Phi-4-mini. Misturar 4 bits nos de 8B com fp16 no Phi confundiria a comparação entre modelos |
 | **Versões** | revisão (commit hash) de cada modelo no Hugging Face, versões de `transformers`/`torch`/`bitsandbytes` registradas no início da execução |
 
-Template de prompt (a ser congelado após o piloto no dev):
+Template de prompt (a ser congelado após o piloto no dev). É **uma única mensagem de usuário**, igual para os três modelos:
 
 ```
 You are a financial analyst. Answer the question using the report below.
@@ -158,15 +158,52 @@ Think step by step briefly, then give the final answer on the last line as
 "Answer: <number>" with two decimals, in the same unit as the table
 (use % for percentages). For yes/no questions, write "Answer: yes" or "Answer: no".
 
-<exemplo 1: contexto + pergunta + resposta>
-<exemplo 2>
-<exemplo 3>
+=== Example 1 ===
+Report:
+<contexto do exemplo, com a tabela na representação da condição>
 
+Question: <pergunta do exemplo>
+
+<raciocínio curto>
+Answer: <resposta>
+
+=== Example 2 ===
+...
+=== Example 3 ===
+...
+
+=== Now answer this one ===
 Report:
 <contexto da condição>
 
 Question: <pergunta>
 ```
+
+### 3.1 Exemplos few-shot
+
+Um exemplo por papel:
+
+| Papel | Critério | Exemplo sorteado (treino) |
+|---|---|---|
+| `table_1step` | 1 passo, evidência só na tabela, resposta que não é porcentagem | `C/2017/page_205.pdf-1` |
+| `both_2step` | 2 passos, evidência na tabela e no texto, resposta em porcentagem | `C/2010/page_306.pdf-1` |
+| `text_only` | evidência só no texto, 1 ou 2 passos | `VLO/2015/page_24.pdf-2` |
+
+**Filtros dos candidatos** (`fewshot_candidates` em `src/finrag.py`):
+
+- resposta numérica (sem sim/não);
+- programa só com `add`, `subtract`, `multiply` e `divide` sobre números, constantes e resultados anteriores;
+- o programa executado reproduz `exe_ans`, e a resposta dos anotadores bate com `exe_ans` na métrica estrita (descarta anotações com ruído);
+- todos os operandos do programa aparecem no contexto;
+- contexto em R1 com até 3.000 caracteres — o quartil mais curto do treino — para que os três exemplos não dominem o prompt;
+- nos dois primeiros papéis, tabela com mais de *k* linhas de dados, para que R4 e R5 sejam de fato diferentes de R1 também nos exemplos;
+- a seleção de linhas (R4) preserva as linhas do gabarito do exemplo, para que a resposta mostrada seja dedutível do contexto em **todas** as condições.
+
+**Sorteio.** Com semente 2026, um exemplo por papel entre os candidatos ordenados por ID (70, 15 e 139 candidatos). Os IDs ficam fixos no código, e a verificação V5 confere que o sorteio os reproduz. Nenhum exemplo foi escolhido ou trocado à mão.
+
+> Nota de transparência: houve dois sorteios. O primeiro, sem o último filtro (a seleção preserva o gabarito do exemplo), deu `C/2010/page_55.pdf-1`, `ETR/2004/page_258.pdf-4` e `VLO/2015/page_24.pdf-2`. O filtro foi acrescentado em seguida, por um motivo que não depende dos exemplos sorteados — sem ele, um exemplo poderia mostrar em R4 uma resposta que não se deduz da tabela exibida —, e o sorteio foi refeito com a mesma semente. Tudo isso aconteceu antes de qualquer geração e envolve só o treino.
+
+**Resposta dos exemplos.** O raciocínio curto de cada exemplo foi escrito à mão, cita os operandos e a conta, termina em `Answer:` com duas casas decimais, é **idêntico nas seis condições** e não menciona o formato da tabela. Só o bloco da tabela dos exemplos muda entre as condições.
 
 ---
 
@@ -258,7 +295,15 @@ Para cada resposta errada com formato válido:
 - **erro de extração** — algum operando numérico do programa do gabarito (números do `program`, sem referências `#n` e constantes `const_*`) **não aparece** no raciocínio do modelo;
 - **erro de cálculo** — todos os operandos aparecem, mas a resposta final está errada.
 
-É uma heurística automática; uma amostra de 50 erros por modelo é conferida à mão para estimar sua precisão.
+Detalhes da implementação (`error_type` em `src/finrag.py`):
+
+- os números são comparados **como números**, sem sinal: `5,735`, `$ 5735` e `5735.0` contam como o mesmo operando;
+- um operando escrito como porcentagem no programa (`5%`) é aceito como `5` ou `0.05`;
+- em operações de tabela (`table_sum(linha, none)` e semelhantes, 39 perguntas do teste), os operandos são os valores da linha citada;
+- quando o programa não tem operando numérico identificável (1 pergunta do teste, só com constantes), o tipo é **indefinido**;
+- saídas sem `Answer:` legível são contadas à parte, como **formato** (seção 6.3).
+
+É uma heurística automática; uma amostra de 50 erros por modelo é conferida à mão para estimar sua precisão (o notebook 04 grava a amostra em `amostra_erros_para_conferir.csv`).
 
 ---
 
@@ -320,9 +365,9 @@ Estas verificações garantem que os métodos comparados são o que dizemos que 
 | V2 | **Mesmo formato em R1, R4, R5:** R4 e R5 têm o cabeçalho de R1 e suas linhas são subsequência das de R1 | notebook 01 | 0 falhas |
 | V3 | **Sem vazamento na seleção:** `select_rows` recebe só `(table, question, k)`, e a seletiva não muda quando o gabarito é removido do exemplo | notebook 01 | 0 falhas |
 | V4 | **Texto fixo:** fora do bloco da tabela, o contexto é idêntico nas seis condições | notebook 01 | 0 falhas |
-| V5 | **Few-shot coerente:** os exemplos de cada condição usam a representação da condição; os IDs dos exemplos não estão no teste nem no dev | notebook 02 | a implementar |
+| V5 | **Few-shot coerente:** o sorteio com a semente reproduz os IDs fixos; os exemplos (e seus documentos) não estão no teste nem no dev; a resposta de cada exemplo é correta na métrica estrita e seus operandos aparecem no contexto em todas as condições; entre condições, só os blocos de tabela do prompt mudam | notebook 02 | passa |
 | V6 | **Parser:** todos os casos da tabela 6.1 (e extras) passam | notebook 01 | 19 casos OK |
-| V7 | **Piloto no dev:** falha de formato < 5% em cada modelo com R1; se passar disso, o prompt é ajustado **no dev** e congelado | notebook 02 | a implementar |
+| V7 | **Piloto no dev:** falha de formato < 5% em cada modelo com R1; se passar disso, o prompt é ajustado **no dev** e congelado. O piloto também mede saídas cortadas no limite de tokens e saídas em que o modelo continua escrevendo depois da resposta (o parser lê o último `Answer:`) | notebook 02 | implementado; **falta rodar na GPU** |
 
 As verificações já pegaram três defeitos que mudariam os resultados: a ordem invertida do template da R3, a perda total de conteúdo de R2/R3 em tabelas de uma linha só, e o colapso de espaços dentro de valores de célula.
 
@@ -332,8 +377,11 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 
 - Total: 1.147 perguntas × 6 condições × 3 modelos = **20.646 gerações**.
 - Resultados salvos em JSONL no Google Drive, um arquivo por modelo × condição, com retomada automática: se a sessão do Colab cair, as perguntas já feitas não são repetidas.
-- Campos de cada registro: `id`, `model`, `rep`, `k`, `prompt_tokens`, `context_tokens`, `output_tokens`, `raw_output`, `parsed_answer`, `format_ok`, `correct_strict`, `correct_lenient`, `error_type`, `latency_s`.
+- Campos de cada registro: `id`, `model`, `rep`, `k`, `prompt_tokens`, `context_tokens`, `output_tokens`, `raw_output`, `parsed_answer`, `format_ok`, `correct_strict`, `correct_lenient`, `error_type`, `latency_s`, e também `split`, `code`, `hit_max_new_tokens`, `batch_size`, `precision` e `prompt_hash`.
 - Metadados da execução: GPU, versões das bibliotecas, revisão de cada modelo, semente dos few-shot, *k* escolhido, hash do template de prompt.
+- **Congelamento.** Ao fim do piloto, o notebook 02 grava `frozen_config.json` com o hash do template, o hash de todos os prompts do teste (1.147 × 6), os IDs dos exemplos, *k*, `max_new_tokens`, a precisão, o tamanho do lote e a revisão de cada modelo. O notebook 03 só roda se o código atual reproduzir esses hashes, e usa a precisão e o lote congelados — nunca os detecta por sessão. Depois que existe qualquer resultado do teste, o congelamento não pode mudar.
+- **Lotes.** A geração é feita em lotes, com *padding* à esquerda. Os lotes são definidos pela lista completa de perguntas, ordenada do prompt mais longo para o mais curto, de modo que interromper e retomar não muda a composição dos lotes. Isso importa porque, em casos de quase empate entre tokens, a saída de uma pergunta pode mudar conforme o *padding* do lote em que ela cai. Se faltar memória, o lote é dividido ao meio e o tamanho usado fica registrado.
+- **Código.** As representações, o parser, o prompt e a geração ficam em `src/finrag.py`, usado pelos notebooks 02–04. As partes que vêm do notebook 01 são conferidas por `tests/test_consistencia.py` (saídas idênticas em todas as tabelas do dev e do teste).
 
 ---
 
@@ -372,5 +420,9 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 | Parser: só após o último `Answer:`, falha de formato, estrita (×1, ×100) e tolerante (teto de 5%) | feito (notebook 01) |
 | Verificações V1, V1b, V2, V3, V4, V6 | feito, todas passam (notebook 01) |
 | Contagem de tokens do contexto, seis condições | feito para Qwen3 e Phi-4-mini; Llama **pendente** de `HF_TOKEN` |
-| Prompt, few-shot (V5), piloto no dev (V7), tokens totais e de saída | **a fazer** (notebook 02) |
-| Inferência, análise estatística, tipo de erro | **a fazer** (notebook 02 em diante) |
+| Módulo compartilhado `src/finrag.py`, idêntico ao notebook 01 nas partes copiadas | feito (`tests/test_consistencia.py` passa) |
+| Prompt e few-shot (V5) | feito (notebook 02); V5 passa |
+| Tokens totais de entrada, por modelo × representação | código pronto (notebook 02); **falta rodar** no teste inteiro com os três tokenizadores (o do Llama exige `HF_TOKEN`) |
+| Piloto no dev (V7), tokens de saída, congelamento | código pronto (notebook 02); **falta rodar na GPU** |
+| Inferência no teste, com retomada | código pronto (notebook 03); **falta rodar na GPU** |
+| Análise estatística, cortes, tipo de erro, custo | código pronto (notebook 04), testado só com resultados sintéticos; **falta rodar com os resultados reais** |

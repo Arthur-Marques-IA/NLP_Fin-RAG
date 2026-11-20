@@ -1,12 +1,12 @@
 # NLP Fin-RAG — Engenharia de Contexto para RAG sobre Dados Tabulares
 
-Trabalho final de NLP (UFG). Estudo controlado de como a **forma de apresentar a tabela ao LLM** afeta a **acurácia** e o **custo em tokens** em perguntas numéricas sobre relatórios financeiros (FinQA), com modelos abertos de ~8B e sem ajuste fino.
+Trabalho final de NLP (UFG). Estudo controlado de como a **forma de apresentar a tabela ao LLM** afeta a **acurácia** e o **custo em tokens** em perguntas numéricas sobre relatórios financeiros (FinQA), com modelos abertos de 4B a 8B e sem ajuste fino.
 
 ## Pergunta de pesquisa
 
 Em perguntas numéricas sobre relatórios financeiros, como a representação da tabela no prompt afeta a acurácia e o custo em tokens, e como esse efeito muda com a complexidade do raciocínio?
 
-- **H1:** o formato altera a acurácia de modelos de ~8B no FinQA, e o melhor formato pode variar entre modelos.
+- **H1:** o formato altera a acurácia de modelos abertos pequenos (4B a 8B) no FinQA, e o melhor formato pode variar entre modelos.
 - **H2:** selecionar as linhas relevantes reduz tokens sem perder acurácia quando a seleção preserva os operandos, e perde acurácia quando os corta.
 - **H3:** as diferenças entre representações crescem nas perguntas de mais passos e nas que exigem tabela e texto.
 
@@ -30,10 +30,26 @@ A metodologia completa — representações comparadas, controles, métricas, es
 docs/
   METODOLOGIA.md                  # como o estudo é conduzido (referência)
 notebooks/
-  01_dados_representacoes.ipynb   # dados, metadados, serializações, avaliação e tokens
+  01_dados_representacoes.ipynb   # dados, metadados, serializações, avaliação e tokens do contexto
+  02_prompt_piloto.ipynb          # few-shot (V5), prompt, tokens de entrada, piloto no dev (V7), congelamento
+  03_inferencia_teste.ipynb       # geração no teste com a configuração congelada, com retomada
+  04_analise.ipynb                # contrastes, cortes, tipo de erro, custo × acurácia, figuras
+src/
+  finrag.py                       # código compartilhado pelos notebooks 02–04
+tests/
+  test_consistencia.py            # confere que src/finrag.py e o notebook 01 dão as mesmas saídas
 Engenharia de Contexto para RAG sobre Dados Tabulares.pdf   # proposta
 Related_Work_RAG_Tabular_QA_Financeiro.pdf                  # revisão da literatura
 ```
+
+| Notebook | Precisa de GPU? | Lê | Grava (pasta de resultados) |
+|---|---|---|---|
+| 01 | não | FinQA | `data/tokens_by_rep.csv` |
+| 02 | sim, no piloto | FinQA (treino, dev, teste) | `pilot_dev/*.jsonl`, `tokens_prompt_test.csv`, **`frozen_config.json`** |
+| 03 | sim | `frozen_config.json` | `test/<modelo>__<representação>.jsonl` |
+| 04 | não | `test/*.jsonl` | `analise/*.csv` e `analise/fig*.png` |
+
+No Colab, a pasta de resultados é `MyDrive/NLP_Fin-RAG/results` no Google Drive; fora dele, `results/` na raiz do repositório (ou a pasta indicada em `FINRAG_RESULTS_DIR`).
 
 ## Primeiros resultados (notebook 01)
 
@@ -47,9 +63,27 @@ Related_Work_RAG_Tabular_QA_Financeiro.pdf                  # revisão da litera
 
 ## Como rodar
 
-1. Abra o notebook no Google Colab com runtime **GPU** (T4 ou superior).
+1. Abra o notebook no Google Colab com runtime **GPU** (T4 ou superior). O notebook 04 roda em CPU.
 2. Para o Llama 3.1 (modelo *gated*), adicione um token do Hugging Face com acesso ao modelo em **Secrets** do Colab com o nome `HF_TOKEN`.
 3. Execute as células em ordem. O FinQA é baixado do repositório oficial ([czyssrs/FinQA](https://github.com/czyssrs/FinQA)) para `data/`.
+
+Os notebooks 02–04 importam `src/finrag.py`. No Colab, eles **clonam este repositório do GitHub**, então o que roda lá é o que está publicado: faça `git push` antes de abrir o notebook.
+
+**Ordem e regras da execução:**
+
+1. **Notebook 02** — roda o piloto no dev. Se a V7 passar (falha de formato < 5% em R1), grava `frozen_config.json` com o prompt, a precisão e a revisão de cada modelo. Qualquer ajuste de prompt é feito aqui, olhando só o dev.
+2. **Notebook 03** — roda o teste (1.147 × 6 condições por modelo). Só funciona se o código reproduzir os hashes do congelamento. Se a sessão cair, rode de novo: ele continua de onde parou.
+3. **Notebook 04** — faz a análise com os modelos que tiverem as seis condições completas.
+
+A precisão (4 bits na T4, bf16 em GPU com 22 GB ou mais) é decidida uma vez, no notebook 02, e vale para todos os modelos e todas as sessões.
+
+### Conferir o código localmente
+
+```bash
+python tests/test_consistencia.py
+```
+
+Compara `src/finrag.py` com o notebook 01 em todas as tabelas do dev e do teste e roda as verificações V1–V4 e V6. Não precisa de GPU.
 
 ### Opcional: controlar o Colab pelo Claude Code (colab-mcp)
 
@@ -62,9 +96,11 @@ claude mcp add --scope project colab-mcp -- colab-mcp
 
 Instalar como ferramenta (em vez de `uvx git+...`) evita o timeout de 30 s na inicialização do servidor.
 
-## Próximos passos
+## Estado e próximos passos
 
-1. Prompt fixo com few-shot retirado do treino do FinQA.
-2. Inferência com os três modelos (8B em 4 bits na T4).
-3. Acurácia por modelo × representação com IC por bootstrap pareado e cortes por passos, evidência e tamanho.
-4. Análise de erros: extração vs. cálculo.
+O código dos notebooks 02–04 está pronto, mas **ainda não foi executado com os modelos reais**: o laço de geração foi testado só com um modelo minúsculo em CPU, e a análise, só com resultados sintéticos. Falta:
+
+1. Rodar o piloto no dev (notebook 02) na GPU, com `HF_TOKEN` para incluir o Llama 3.1, e conferir a V7.
+2. Rodar o teste (notebook 03).
+3. Rodar a análise (notebook 04) e conferir à mão a amostra de 50 erros por modelo.
+4. Escrever os resultados e a discussão.
