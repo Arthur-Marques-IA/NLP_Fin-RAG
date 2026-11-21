@@ -51,7 +51,7 @@ Medido até agora só na T4 em 4 bits, com 16 a 48 perguntas da representação 
 
 Na A100 ou na G4 o tempo **não foi medido**; espera-se que seja várias vezes menor. A seção 7 do notebook 02 calcula a projeção real a partir do piloto, na GPU em que ele rodar. Vale combinar o total de horas depois desse número.
 
-**O caminho em bf16 ainda não rodou com os modelos de 8B.** O prompt e o parser foram ajustados na T4, em 4 bits. O piloto na GPU escolhida é a primeira execução real em bf16, e é por isso que ele vem antes de qualquer hora reservada para o teste: se um modelo reprovar na V7 (falha de formato de 5% ou mais em R1), ele fica fora do congelamento e o prompt volta a ser ajustado no dev.
+**O caminho em bf16 ainda não rodou com os modelos de 8B.** Ele foi exercitado só com o Phi-4-mini, na T4, em 8 perguntas (carregou, gerou, gravou no Drive e não teve falha de formato; a T4 não acelera bf16, então o tempo medido ali não serve de referência). O prompt e o parser foram ajustados na T4, em 4 bits. O piloto na GPU escolhida é a primeira execução real em bf16, e é por isso que ele vem antes de qualquer hora reservada para o teste: se um modelo reprovar na V7 (falha de formato de 5% ou mais em R1), ele fica fora do congelamento e o prompt volta a ser ajustado no dev.
 
 ## 3. O que combinar antes
 
