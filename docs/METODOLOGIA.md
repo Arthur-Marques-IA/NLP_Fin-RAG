@@ -377,7 +377,7 @@ Todos são **pareados** (mesmas perguntas, mesmo modelo) e têm R1 (Markdown com
 | R4 − R1 | H2 | **subconjunto efetivo**: tabela com mais de *k* linhas de dados e com linhas no gabarito |
 | R5 − R1 | H2 (teto) | mesmo subconjunto efetivo |
 
-São 5 contrastes × 3 modelos = 15 testes.
+São 5 contrastes × 2 modelos = 10 testes.
 
 **Por que o subconjunto efetivo para H2:** com *k* = 4, R4 é idêntica a R1 em 493 perguntas (43%, tabelas com até 4 linhas de dados), e em perguntas sem linhas no gabarito não há o que preservar. Incluí-las diluiria o efeito da seleção. O **subconjunto efetivo tem 488 perguntas**: tabela com mais de 4 linhas de dados e com linhas no gabarito. Também se reporta R4 − R1 em todas as perguntas, como efeito prático.
 
@@ -387,7 +387,7 @@ São 5 contrastes × 3 modelos = 15 testes.
 
 - Diferença de acurácia com **IC de 95% por bootstrap pareado** (10.000 reamostragens de perguntas).
 - **Teste de McNemar exato** para cada contraste.
-- **Correção de Holm** sobre os 15 testes.
+- **Correção de Holm** sobre os 10 testes.
 - Tamanho de efeito reportado em pontos percentuais, sempre com o IC.
 
 ### 7.3 Cortes (H3)
