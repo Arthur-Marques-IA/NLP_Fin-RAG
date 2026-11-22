@@ -15,7 +15,7 @@ Este documento é a referência de **como o estudo será conduzido**. Ele fixa o
 | **H3** | As diferenças entre representações crescem nas perguntas de mais passos e nas que exigem tabela e texto. | Interação representação × passos e representação × origem da evidência |
 
 **Variável independente:** só a representação da tabela.
-**Variáveis dependentes:** acurácia, tokens de entrada, tokens de saída, taxa de falha de formato.
+**Variáveis dependentes:** acurácia, tokens de entrada, tokens de saída, desfecho da saída (resposta, recusa, corte ou falha de formato).
 
 ---
 
@@ -146,11 +146,11 @@ Tudo abaixo é **idêntico entre as seis condições**, para que a representaç�
 | **Formato da saída** | raciocínio curto e última linha `Answer: <número>`, com 2 casas decimais, na unidade da tabela, porcentagens com `%`; sim/não como `Answer: yes` ou `Answer: no`. O formato é pedido na instrução e repetido em um **lembrete de uma linha no fim do prompt**, igual em todas as condições |
 | **Decodificação** | gulosa (temperatura 0), mesmo `max_new_tokens` para todos (512) |
 | **Chat template** | o template oficial de cada modelo, com `add_generation_prompt=True` |
-| **Modo de raciocínio** | Qwen3 com `enable_thinking=False`, para que os três modelos gerem no mesmo regime e o custo de saída seja comparável |
-| **Precisão numérica** | **a mesma para os três modelos.** Preferência: bf16 em GPU L4/A100. Na T4 (15 GB): 4 bits NF4 para **todos**, inclusive o Phi-4-mini, com as partes não quantizadas e as ativações em fp16 (a T4 não acelera bf16). Misturar 4 bits nos de 8B com fp16 no Phi confundiria a comparação entre modelos |
+| **Modo de raciocínio** | Qwen3 com `enable_thinking=False`, para que os dois modelos gerem no mesmo regime e o custo de saída seja comparável |
+| **Precisão numérica** | **a mesma para os dois modelos: bf16**, em GPU com 22 GB ou mais (L4, A100, G4). Foi a precisão do piloto e fica gravada no congelamento. O código também carrega em 4 bits (NF4, com ativações em fp16), usado só nos testes iniciais na T4 |
 | **Versões** | revisão (commit hash) de cada modelo no Hugging Face, versões de `transformers`/`torch`/`bitsandbytes` registradas no início da execução |
 
-Template de prompt (a ser congelado após o piloto no dev). É **uma única mensagem de usuário**, igual para os três modelos:
+Template de prompt (a ser congelado após o piloto no dev). É **uma única mensagem de usuário**, igual para os dois modelos:
 
 ```
 You are a financial analyst. Answer the question using the report below.
@@ -191,6 +191,14 @@ Think step by step briefly, then end with the final line "Answer: <number>" (or 
 | D — C precedida de `The report has the data needed to answer.` e com `Show the calculation briefly` | 4 | 22 | 2 de 4 | 132 | 0 |
 
 A variante A fazia o modelo responder `Answer: 488.00%` e `Answer: 100%` a perguntas de sim ou não, porque só mencionava `<number>`; a C repete as duas formas. Uma variante anterior, que acrescentava "Always give a numeric answer", tinha zerado as falhas em 16 perguntas mas feito o modelo pular o raciocínio, e foi descartada. Critério de escolha: menos falhas de formato no Phi-4-mini, sem encurtar o raciocínio e sem piorar o Qwen3-8B. No Qwen3-8B (4 bits, R1), nas mesmas 48 perguntas, o lembrete adotado não piorou nada: 2 falhas de formato e 28 acertos, contra 3 e 27 sem ele. As falhas do Qwen3 são recusas (`Answer: no` em pergunta numérica) e, sem o lembrete, uma saída em laço de repetição que bateu no limite de 512 tokens. Essas saídas estão em `NLP - Checkpoints/experimentos`, no Drive. São 48 perguntas e uma única representação: quem decide se o prompt está apto é a V7, no piloto de 150 perguntas por modelo. As saídas brutas desta comparação no Phi-4-mini não foram preservadas (a sessão do Colab caiu antes de os resultados irem para o Drive); ficaram os totais da tabela. O lembrete faz parte do hash do template, então qualquer mudança nele invalida os arquivos já gerados.
+
+**Prompt final e versões descartadas (transparência).** O prompt acima (hash `bd940bbf875bc8e1`) é o do estudo. Depois dele, outras oito versões foram testadas nas mesmas 150 perguntas do piloto, tentando baixar a taxa de saídas sem resposta legível de cada modelo. Elas foram descartadas por três motivos:
+
+- nenhuma mudou o quadro: a acurácia em R1 ficou em 67–70% (Qwen3), 57–63% (Phi-4-mini) e 60–66% (Llama, avaliado no piloto) em todas, e as diferenças na taxa de saídas sem resposta eram de 2 a 4 perguntas em 150, dentro do ruído; cada versão melhorava um modelo e piorava outro;
+- escolher entre nove versões pela mesma amostra de 150 perguntas é ajustar o prompt ao ruído do dev;
+- o código dessas versões não foi versionado, então os pilotos delas não são reproduzíveis.
+
+O que estava errado não era o prompt, e sim o critério: a V7 original contava como "falha de formato" tanto a recusa do modelo quanto a saída cortada, que não são falhas de formato. O critério foi corrigido (seções 6.3 e 8) e o prompt publicado foi mantido. Regra daqui em diante: só vale piloto gerado com código que está no repositório.
 
 ### 3.1 Exemplos few-shot
 
@@ -248,11 +256,12 @@ Para que nenhuma decisão seja ajustada olhando o resultado do teste:
 
 | Modelo | Repositório | Parâmetros | Observação |
 |---|---|---|---|
-| Llama 3.1 8B Instruct | `meta-llama/Llama-3.1-8B-Instruct` | 8,0B | *gated*: precisa de `HF_TOKEN` com acesso |
 | Qwen3-8B | `Qwen/Qwen3-8B` | 8,2B | `enable_thinking=False` |
 | Phi-4-mini-instruct | `microsoft/Phi-4-mini-instruct` | 3,8B | porte menor: permite ver o efeito do tamanho |
 
-São dois portes (≈8B e ≈4B), não três modelos de ~8B. O texto do trabalho deve dizer "modelos abertos de 4B a 8B".
+São dois modelos abertos, de dois portes (≈8B e ≈4B). O texto do trabalho deve dizer "dois modelos abertos, de 4B e 8B". Nenhum exige token do Hugging Face.
+
+**Modelo deixado de fora.** O Llama 3.1 8B Instruct (`meta-llama/Llama-3.1-8B-Instruct`) estava no plano e passou no piloto (seção 6.3), mas não entra no teste: é o mais lento dos três (cerca de 23 h de GPU L4 para as seis condições, contra 16 h do Qwen3 e 12 h do Phi-4-mini) e o tempo de GPU disponível não comporta os três. A decisão foi tomada **antes de qualquer resultado do teste**, por custo, e não pelo desempenho no piloto. Os números do Llama no piloto ficam registrados na seção 6.3 só como contexto. A ordem de execução é Qwen3-8B e depois Phi-4-mini; se o tempo acabar antes do fim, a análise usa os modelos com as seis condições completas.
 
 ---
 
@@ -266,7 +275,7 @@ Gabarito: `exe_ans`, o resultado da execução do programa anotado (como a acur�
 
 - se a linha é uma conta (`Answer: 30 + 29 = 59`), vale o que vem depois do último `=` (ou `≈`);
 - uma frase no lugar do número (`Answer: The amount cannot be determined after October 29, 2011`) **não** é resposta, mesmo que contenha números;
-- sem `Answer:`, ou sem número no início da linha, a saída conta como **falha de formato** (e como erro na acurácia).
+- sem `Answer:`, ou sem número no início da linha, a saída **não tem resposta legível** e conta como erro na acurácia. O motivo (recusa, corte, falha de formato) é classificado na seção 6.3.
 
 A primeira versão do parser lia o primeiro número em qualquer ponto do texto após `Answer:`. Na primeira rodada na GPU (dev), isso leu `30` em `Answer: $ 30 + $ 29 + … = $ 560 million` e `29` em uma frase que citava "October 29, 2011". As regras acima corrigem os dois casos. O custo é conhecido: uma resposta correta escrita como frase (`Answer: Asia-Pacific contributed 8.97% of the total operating income in 2015.`) passa a contar como falha de formato. A regra vale igualmente para todas as condições e modelos, e o lembrete de formato no fim do prompt (seção 3) existe para reduzir esses casos.
 
@@ -299,7 +308,7 @@ Casos que o parser precisa acertar (testes unitários do notebook):
 | `Answer: $7,301 million` | 7301000000.0 | ✓ | ✓ |
 | `Answer: 9119 million` | 9119.0 | ✓ | ✓ |
 | `Answer: 7301.00` | 7301000000.0 | ✗ | ✗ |
-| `Answer: The amount cannot be determined after October 29, 2011.` | 2.33 | ✗ (falha de formato) | ✗ |
+| `Answer: The amount cannot be determined after October 29, 2011.` | 2.33 | ✗ (sem resposta legível) | ✗ |
 
 ### 6.2 Custo
 
@@ -310,9 +319,31 @@ Contados com o **tokenizador de cada modelo**, já com o chat template aplicado:
 
 O custo da seleção (R4) é zero em tokens de LLM e é declarado como tal.
 
-### 6.3 Falha de formato
+### 6.3 Desfecho da saída
 
-Fração de saídas sem `Answer:` legível (sem a marca, ou com uma frase no lugar do número), por modelo × representação. Uma representação que confunde o modelo a ponto de ele não seguir o formato é um resultado em si, e precisa ser separada de erro de conteúdo.
+Cada saída é classificada em exatamente um desfecho (`outcome` em `src/finrag.py`), relatado por modelo × representação:
+
+| Desfecho | O que é | Conta como |
+|---|---|---|
+| `resposta` | há uma resposta legível na linha do `Answer:` | acerto ou erro, pela seção 6.1 |
+| `recusa` | a linha do `Answer:` diz que não dá para responder (`Answer: no` em pergunta numérica, `Answer: cannot be determined`) | erro |
+| `outra` | há `Answer:`, seguido de algo que não é resposta nem recusa (uma frase, por exemplo) | erro |
+| `cortada` | a geração bateu no limite de 512 tokens antes de escrever `Answer:` | erro |
+| `sem_answer` | a geração terminou sozinha sem a linha `Answer:` | erro; é a única **falha de formato do prompt** |
+
+A separação importa porque são fenômenos diferentes. `sem_answer` diz que o prompt não conseguiu impor o formato. `recusa` e `cortada` são comportamento do modelo diante do conteúdo: uma representação que leva o modelo a recusar mais, ou a se perder em um laço, é um resultado do estudo e não um defeito do prompt. Todas contam como erro na acurácia, então nenhuma resposta é descartada da comparação.
+
+**Piloto (dev, 150 perguntas em R1, bf16, prompt `bd940bbf`):**
+
+| Modelo | `resposta` | `recusa` | `cortada` | `sem_answer` | Acerto estrito |
+|---|---|---|---|---|---|
+| Llama 3.1 8B (fora do estudo) | 93,3% | 0% | 6,7% | 0% | 62,7% |
+| Qwen3-8B | 94,7% | 5,3% | 0% | 0% | 70,0% |
+| Phi-4-mini | 96,0% | 4,0% | 0% | 0% | 63,3% |
+
+Os dois modelos do estudo passam na V7 (seção 8), e nenhum dos três deixou de escrever a linha `Answer:`. O Qwen3 e o Phi-4-mini recusam (`Answer: no`) quando julgam que o relatório não traz o dado; o Llama não recusa, mas 10 das 150 saídas batem no limite de tokens antes da resposta. Nas outras cinco representações (30 perguntas cada, amostra pequena) as recusas vão de 0% a 17% e os cortes do Llama de 0% a 17%: é o tipo de diferença entre representações que o teste vai medir com 1.147 perguntas.
+
+**O limite de 512 tokens foi mantido.** Nos dois modelos do estudo, nenhuma das 300 saídas do piloto (seis representações) bateu no limite: a mais longa teve 360 tokens no Qwen3 e 383 no Phi-4-mini. No Llama, que ficou fora, 10 das 150 saídas em R1 foram cortadas: 6 eram laços de repetição e 4, raciocínios longos. `max_new_tokens` faz parte do congelamento e não pode mudar depois que o teste começa; se alguma saída do teste for cortada, ela conta como erro e aparece no desfecho `cortada`.
 
 ### 6.4 Tipo de erro (extração × cálculo)
 
@@ -392,7 +423,7 @@ Estas verificações garantem que os métodos comparados são o que dizemos que 
 | V4 | **Texto fixo:** fora do bloco da tabela, o contexto é idêntico nas seis condições | notebook 01 | 0 falhas |
 | V5 | **Few-shot coerente:** o sorteio com a semente reproduz os IDs fixos; os exemplos (e seus documentos) não estão no teste nem no dev; a resposta de cada exemplo é correta na métrica estrita e seus operandos aparecem no contexto em todas as condições; entre condições, só os blocos de tabela do prompt mudam | notebook 02 | passa |
 | V6 | **Parser:** todos os casos da tabela 6.1 (e extras) passam | notebook 01 | 37 casos OK |
-| V7 | **Piloto no dev:** falha de formato < 5% em cada modelo com R1; se passar disso, o prompt é ajustado **no dev** e congelado. O piloto também mede saídas cortadas no limite de tokens e saídas em que o modelo continua escrevendo depois da resposta (o parser lê o último `Answer:`) | notebook 02 | implementado; **falta rodar na GPU** |
+| V7 | **Piloto no dev**, em R1 e para cada modelo: (a) saídas `sem_answer` < 5% e (b) saídas com `resposta` ≥ 90% (seção 6.3). Recusas e cortes são relatados e contam como erro, mas não reprovam o prompt enquanto (b) valer | notebook 02 | passa nos dois modelos: `sem_answer` 0%; `resposta` 94,7% (Qwen3) e 96,0% (Phi-4-mini) |
 
 As verificações já pegaram três defeitos que mudariam os resultados: a ordem invertida do template da R3, a perda total de conteúdo de R2/R3 em tabelas de uma linha só, e o colapso de espaços dentro de valores de célula.
 
@@ -400,9 +431,10 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 
 ## 9. Execução e registro
 
-- Total: 1.147 perguntas × 6 condições × 3 modelos = **20.646 gerações**.
+- Total: 1.147 perguntas × 6 condições × 2 modelos = **13.764 gerações** (cerca de 28 h de GPU L4 em bf16, pela latência do piloto).
 - **Checkpoints.** Tudo o que é gerado fica na pasta `NLP - Checkpoints/results` do Google Drive (nome em `DRIVE_FOLDER`, em `src/finrag.py`): um JSONL por modelo × condição, gravado **a cada lote** (4 perguntas), mais os arquivos de estado (`frozen_config.json`, `pilot_dev/revisions.json`, `test/sessions.jsonl`). Se a sessão do Colab cair, basta abrir o notebook e rodar de novo: as perguntas já gravadas são puladas, um modelo completo nem é carregado, e perde-se no máximo o lote em andamento. Uma linha cortada no fim do arquivo é ignorada e refeita; os arquivos de estado são gravados em arquivo temporário e trocados no fim. `tests/test_retomada.py` simula três quedas seguidas e confere que o resultado é idêntico ao de uma execução sem interrupção.
 - Campos de cada registro: `id`, `model`, `rep`, `k`, `prompt_tokens`, `context_tokens`, `output_tokens`, `raw_output`, `parsed_answer`, `format_ok`, `correct_strict`, `correct_lenient`, `error_type`, `latency_s`, e também `split`, `code`, `hit_max_new_tokens`, `batch_size`, `precision` e `prompt_hash`.
+- **Código não commitado.** O congelamento e cada sessão do teste gravam, além do commit, se havia arquivo modificado sem commit (`git_dirty`). Resultado gerado assim não é reproduzível e não entra no estudo.
 - Metadados da execução: GPU, versões das bibliotecas, revisão de cada modelo, semente dos few-shot, *k* escolhido, hash do template de prompt.
 - **Congelamento.** Ao fim do piloto, o notebook 02 grava `frozen_config.json` com o hash do template, o hash de todos os prompts do teste (1.147 × 6), os IDs dos exemplos, *k*, `max_new_tokens`, a precisão, o tamanho do lote e a revisão de cada modelo. O notebook 03 só roda se o código atual reproduzir esses hashes, e usa a precisão e o lote congelados — nunca os detecta por sessão. Depois que existe qualquer resultado do teste, o congelamento não pode mudar.
 - **Lotes.** A geração é feita em lotes, com *padding* à esquerda. Os lotes são definidos pela lista completa de perguntas, ordenada do prompt mais longo para o mais curto, de modo que interromper e retomar não muda a composição dos lotes. Isso importa porque, em casos de quase empate entre tokens, a saída de uma pergunta pode mudar conforme o *padding* do lote em que ela cai. Se faltar memória, o lote é dividido ao meio e o tamanho usado fica registrado.
@@ -415,9 +447,13 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 
 - Sem ajuste fino (alternativa do TAT-LLM) e sem agentes com acesso por código (alternativa do TableRAG).
 - Tabelas do FinQA são pequenas e regulares (média de 5,5 linhas de dados); a conclusão não se estende a tabelas hierárquicas (MultiHiertt) nem a tabelas grandes, onde a economia da seleção seria maior.
-- A tabela ocupa uma fração pequena do contexto (~150–190 de ~890–1.000 tokens no Markdown), então diferenças de custo entre representações tendem a ser modestas — isso é um achado, não uma falha. Contexto médio relativo a R1, no teste: R0 0,96×, R2 1,13×, R3 1,18×, R4 0,95× (0,90× no subconjunto efetivo), R5 0,88× (Qwen3 e Phi-4-mini; Llama pendente de `HF_TOKEN`).
+- A tabela ocupa uma fração pequena do contexto (~150–190 de ~890–1.000 tokens no Markdown), então diferenças de custo entre representações tendem a ser modestas — isso é um achado, não uma falha. Contexto médio relativo a R1, no teste: R0 0,96×, R2 1,13×, R3 1,18×, R4 0,95× (0,90× no subconjunto efetivo), R5 0,88× (Qwen3 e Phi-4-mini).
 - Se a execução for em 4 bits, os resultados absolutos ficam abaixo dos de bf16; a comparação **entre representações dentro do mesmo modelo** continua válida.
+- São dois modelos, um de cada porte. O que for igual nos dois é um indício de generalidade; o que diferir não pode ser atribuído só ao tamanho, porque os modelos também diferem em família e treinamento.
 - A heurística de tipo de erro é aproximada e validada por amostra.
+- A V7 foi redefinida depois de ver o piloto (seção 6.3). É um critério de aptidão do prompt, aplicado só ao dev; não entra em nenhum resultado do teste. A definição original (qualquer saída sem resposta legível < 5%) reprovaria o Qwen3 (5,3%) e o Llama (6,7%) por comportamentos que não são falha de formato.
+- O limite de 512 tokens corta saídas que ainda não chegaram à resposta. No piloto isso não ocorreu com os dois modelos do estudo em R1 (ocorreu em 7% das saídas do Llama, que ficou fora). Se ocorrer no teste, a saída conta como erro e aparece no desfecho `cortada`.
+- O piloto de 150 perguntas não tem nenhuma pergunta de sim/não (20 no teste); o formato delas foi conferido só na comparação de lembretes (4 perguntas por modelo).
 - Em 5 perguntas do teste o programa do gabarito termina convertendo a unidade (× 1.000 ou × 1.000.000), e o `exe_ans` fica em unidades enquanto a tabela está em milhares ou milhões. Nelas, a resposta na unidade da tabela só é aceita se trouxer a unidade por extenso (`35 million`); `35.00` conta como erro. São as mesmas perguntas nas seis condições, então a comparação entre representações não é afetada.
 
 ---
@@ -431,11 +467,14 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 | Seleção lexical | seleção por embeddings ou por LLM | Sem custo de tokens e sem vazamento; seleção por LLM misturaria custo e qualidade do seletor |
 | `gold_inds` para R5 | `ann_table_rows` | `ann_table_rows` vem vazio em ~110 perguntas com gabarito |
 | Resposta em texto + heurística de erro | modelo gera programa executável | Mantém o cenário próximo do uso real de RAG; a geração de programa fica como extensão |
-| Qwen3 sem modo de raciocínio | com raciocínio | Mesmo regime de geração nos três modelos; com raciocínio, o custo de saída do Qwen não seria comparável |
+| Qwen3 sem modo de raciocínio | com raciocínio | Mesmo regime de geração nos dois modelos; com raciocínio, o custo de saída do Qwen não seria comparável |
 | Mesma precisão para todos os modelos | 4 bits só nos de 8B | Evita confundir porte do modelo com quantização |
+| Dois modelos (Qwen3-8B e Phi-4-mini) | três, com o Llama 3.1 8B | Tempo de GPU: o Llama sozinho custaria quase tanto quanto os outros dois juntos. Decidido antes do teste, por custo |
 | Métrica estrita como principal | só a tolerante | A tolerante dá margem a respostas pouco precisas; serve como análise de sensibilidade |
 | Resposta = número no início da linha do `Answer:` | primeiro número em qualquer ponto após `Answer:` | A regra antiga lia números de contas e de frases (`30` em `30 + 29 = 59`); a nova lê o que o modelo deu como resposta e conta frase como falha de formato |
-| GPU T4 com 4 bits (NF4), em várias sessões com retomada | TPU v5e-1 do Colab | A TPU tem 16 GB por chip e o `bitsandbytes` não roda nela: os modelos de 8B não cabem em bf16 e a condição "4 bits" não pode ser reproduzida. Além disso, a geração com prompts de tamanhos diferentes recompila a cada formato novo. Avaliação feita pela documentação, sem medir |
+| V7 = saída sem a linha `Answer:` < 5% e resposta legível ≥ 90% | qualquer saída sem resposta legível < 5% | A definição antiga misturava falha de formato com recusa e corte, que são comportamento do modelo; levou a oito trocas de prompt sem ganho real |
+| Manter `max_new_tokens` = 512 | aumentar para 768 ou 1024 | Nenhuma saída dos dois modelos do estudo bateu no limite no piloto; aumentar exigiria um piloto novo |
+| GPU com 22 GB ou mais em bf16 (L4, A100, G4) | TPU v5e-1 do Colab; T4 em 4 bits | bf16 é a precisão preferida e foi a do piloto. A T4 obrigaria a quantizar em 4 bits e é a mais lenta. A TPU tem 16 GB por chip, não roda o `bitsandbytes` e recompila a geração a cada tamanho de prompt (avaliação pela documentação, sem medir) |
 
 ---
 
@@ -448,11 +487,11 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 | Escolha de *k* no dev pela regra da seção 4 → **k = 4** | feito (notebook 01) |
 | Parser: número no início da linha após o último `Answer:`, contas com `=`, unidade por extenso, falha de formato, estrita (×1, ×100) e tolerante (teto de 5%) | feito (notebook 01); revisto depois da primeira rodada na GPU |
 | Verificações V1, V1b, V2, V3, V4, V6 | feito, todas passam (notebook 01) |
-| Contagem de tokens do contexto, seis condições | feito para Qwen3 e Phi-4-mini; Llama **pendente** de `HF_TOKEN` |
+| Contagem de tokens do contexto, seis condições | feito para Qwen3 e Phi-4-mini |
 | Módulo compartilhado `src/finrag.py`, idêntico ao notebook 01 nas partes copiadas | feito (`tests/test_consistencia.py` passa) |
 | Prompt e few-shot (V5) | feito (notebook 02); V5 passa. Lembrete de formato acrescentado depois da primeira rodada na GPU |
-| Tokens totais de entrada, por modelo × representação | código pronto (notebook 02); **falta rodar** no teste inteiro com os três tokenizadores (o do Llama exige `HF_TOKEN`) |
-| Piloto no dev (V7), tokens de saída, congelamento | código pronto (notebook 02); **falta rodar na GPU** |
+| Tokens totais de entrada, por modelo × representação | código pronto (notebook 02); é regravado junto com o congelamento |
+| Piloto no dev (V7), tokens de saída, congelamento | piloto feito em bf16 (L4) com o prompt `bd940bbf`: os dois modelos passam na V7. **Falta regravar o `frozen_config.json`** (notebook 02, sem GPU) |
 | Checkpoints no Google Drive e retomada | feito; `tests/test_retomada.py` passa |
 | Inferência no teste, com retomada | código pronto (notebook 03); **falta rodar na GPU** |
 | Análise estatística, cortes, tipo de erro, custo | código pronto (notebook 04), testado só com resultados sintéticos; **falta rodar com os resultados reais** |

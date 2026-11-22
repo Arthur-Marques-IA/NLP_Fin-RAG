@@ -327,6 +327,21 @@ PARSER_TESTS = [
     ("Answer: no", 94.0, False, False, False),
 ]
 
+# Desfecho da saída: (saída, gabarito, cortada no limite de tokens, desfecho esperado)
+OUTCOME_TESTS = [
+    ("x = 94\nAnswer: 94.00", 94.0, False, "resposta"),
+    ("Answer: yes", "yes", False, "resposta"),
+    ("We cannot calculate the percentage.\n\nAnswer: no", 0.12, False, "recusa"),
+    ("Answer: cannot be determined from the provided information.", 0.12, False, "recusa"),
+    ("Answer: **N/A**", 0.12, False, "recusa"),
+    ("Answer: Unable to determine.", 0.12, False, "recusa"),
+    ("Answer: The revenues were $2573 million for 2016.", 2573.0, False, "outra"),
+    ("Answer: 488.00%", "no", False, "outra"),
+    ("29704 x 5.99 = 177, 29704 x 5.99 = 177, 29704 x 5.99 =", 1229.0, True, "cortada"),
+    ("The change was an increase of 9,119 million.", 9119.0, False, "sem_answer"),
+    ("Answer: no\nbut then it kept going until the limit", 0.12, True, "recusa"),
+]
+
 
 
 # =====================================================================================
@@ -457,6 +472,9 @@ def run_checks(examples, k=K_FROZEN):
     bad = [t for t, g, s, l, f in PARSER_TESTS
            if (evaluate(t, g)["strict"], evaluate(t, g)["lenient"], evaluate(t, g)["format_ok"]) != (s, l, f)]
     out["V6  parser"] = f"{len(PARSER_TESTS) - len(bad)}/{len(PARSER_TESTS)} casos"
+    bad_outcome = [t for t, g, cut, expected in OUTCOME_TESTS if outcome(t, g, cut) != expected]
+    assert not bad_outcome, bad_outcome
+    out["V6b desfecho da saída"] = f"{len(OUTCOME_TESTS)}/{len(OUTCOME_TESTS)} casos"
     assert not bad, bad
     return out
 
@@ -779,8 +797,9 @@ def prompts_fingerprint(examples, shots, k=K_FROZEN):
 # =====================================================================================
 # 8. Geração (seções 3, 5 e 9 da metodologia)
 # =====================================================================================
+# Modelos do estudo, na ordem de execução. Os dois são abertos e não exigem token do Hugging Face.
+# O Llama 3.1 8B Instruct passou no piloto, mas ficou fora por tempo de GPU (seção 5 da metodologia).
 MODELS = {
-    "llama3.1-8b": "meta-llama/Llama-3.1-8B-Instruct",
     "qwen3-8b":    "Qwen/Qwen3-8B",
     "phi4-mini":   "microsoft/Phi-4-mini-instruct",
 }
@@ -913,6 +932,38 @@ def _generate_safe(tokenizer, model, model_name, prompts, max_new_tokens):
             + _generate_safe(tokenizer, model, model_name, prompts[mid:], max_new_tokens))
 
 
+OUTCOMES = ("resposta", "recusa", "outra", "cortada", "sem_answer")
+REFUSAL_RE = re.compile(
+    r"[\s*_`\"'\[(]*(?:no|yes|n\s*/\s*a|none|unknown|undetermined|indeterminate|insufficient|cannot|can\s?not|can't|unable|"
+    r"not\s+(?:possible|available|enough|provided|determinable|applicable|calculable))\b", re.I)
+
+
+def outcome(raw_output, gold, hit_max_new_tokens=False):
+    """Desfecho de uma saída (seção 6.3 da metodologia). Só "resposta" pode contar como acerto.
+
+    - "resposta": há uma resposta legível na linha do `Answer:` (número, ou sim/não quando o gabarito é sim/não);
+    - "recusa": a linha do `Answer:` diz que não dá para responder (`Answer: no` em pergunta numérica,
+      `Answer: cannot be determined`);
+    - "outra": há `Answer:`, seguido de algo que não é resposta nem recusa (uma frase, por exemplo);
+    - "cortada": a geração bateu no limite de tokens antes de escrever `Answer:`;
+    - "sem_answer": a geração terminou sozinha sem a linha `Answer:`. É a única falha de FORMATO do prompt."""
+    if evaluate(raw_output, gold)["format_ok"]:
+        return "resposta"
+    seg = answer_segment(raw_output)
+    if seg is None:
+        return "cortada" if hit_max_new_tokens else "sem_answer"
+    return "recusa" if REFUSAL_RE.match(seg) else "outra"
+
+
+def outcome_rates(df, examples):
+    """Fração de cada desfecho por modelo × condição. `df` tem raw_output, id, hit_max_new_tokens, model, code."""
+    import pandas as pd
+    gold = {ex["id"]: ex["qa"]["exe_ans"] for ex in examples}
+    kinds = [outcome(raw, gold[i], bool(hit)) for raw, i, hit in zip(df["raw_output"], df["id"], df["hit_max_new_tokens"])]
+    table = pd.crosstab([df["model"], df["code"]], pd.Series(kinds, index=df.index, name="desfecho"), normalize="index")
+    return table.reindex(columns=list(OUTCOMES), fill_value=0.0)
+
+
 def output_flags(raw_output):
     """Sinais de que o modelo continuou escrevendo depois da resposta (medidos no piloto).
     O parser lê o ÚLTIMO "Answer:"; se o modelo inventa uma nova pergunta e a responde,
@@ -935,6 +986,7 @@ def make_record(ex, split, model_name, rep, k, gen, context_tokens, precision, p
         "prompt_tokens": gen["prompt_tokens"], "context_tokens": context_tokens,
         "output_tokens": gen["output_tokens"], "raw_output": gen["raw_output"],
         "parsed_answer": res["pred"], "format_ok": res["format_ok"],
+        "outcome": outcome(gen["raw_output"], ex["qa"]["exe_ans"], gen["hit_max_new_tokens"]),
         "correct_strict": res["strict"], "correct_lenient": res["lenient"],
         "error_type": error_type(gen["raw_output"], ex, res),
         "latency_s": gen["latency_s"], "hit_max_new_tokens": gen["hit_max_new_tokens"],
@@ -1121,6 +1173,26 @@ def git_sha(repo_dir="."):
                               text=True, check=True).stdout.strip()
     except Exception:
         return None
+
+
+def git_dirty(repo_dir="."):
+    """True se há arquivo versionado modificado e não commitado (None se não der para consultar).
+    Um resultado gerado assim não é reproduzível a partir do commit registrado."""
+    import subprocess
+    try:
+        out = subprocess.run(["git", "-C", str(repo_dir), "status", "--porcelain", "--untracked-files=no"],
+                             capture_output=True, text=True, check=True).stdout
+        return bool(out.strip())
+    except Exception:
+        return None
+
+
+def pilot_state(results_dir, split="pilot_dev"):
+    """Conjunto de (prompt_hash, precision) presentes nos arquivos de um split já gravado."""
+    found = set()
+    for path in sorted((pathlib.Path(results_dir) / split).glob("*__*.jsonl")):
+        found |= {(r.get("prompt_hash"), r.get("precision")) for r in read_jsonl(path)}
+    return found
 
 
 def save_json(path, obj):

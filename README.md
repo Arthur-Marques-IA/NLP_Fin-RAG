@@ -15,7 +15,7 @@ Em perguntas numéricas sobre relatórios financeiros, como a representação da
 | Item | Escolha |
 |---|---|
 | Dados | FinQA, conjunto de teste oficial (1.147 perguntas) |
-| Modelos | Llama 3.1 8B Instruct, Qwen3-8B, Phi-4-mini-instruct |
+| Modelos | Qwen3-8B e Phi-4-mini-instruct (o Llama 3.1 8B passou no piloto, mas ficou fora por tempo de GPU) |
 | Representações | R0 Bruta (controle), R1 Markdown (referência), R2 JSON, R3 Linearizada (frase por célula), R4 Seletiva (top-k linhas, Markdown) + R5 Gold-tabela (diagnóstico) |
 | Fixos | texto do relatório, prompt, posição da pergunta, exemplos few-shot (do treino), temperatura 0 |
 | Métrica | acurácia de execução estrita (erro relativo ≤ 1%, gabarito `exe_ans`) + versão tolerante ao arredondamento como sensibilidade |
@@ -69,19 +69,19 @@ No Colab, a pasta de resultados é `NLP - Checkpoints/results` no Google Drive (
 
 O passo a passo para quem vai executar — qual ambiente escolher, preparação da conta, o que fazer se a sessão cair — está em **[docs/EXECUCAO_COLAB.md](docs/EXECUCAO_COLAB.md)**. Em resumo:
 
-1. Abra o notebook no Google Colab com runtime **GPU** (A100 ou G4 de preferência; T4 funciona em 4 bits). As TPUs não servem. O notebook 04 roda em CPU.
-2. Para o Llama 3.1 (modelo *gated*), adicione um token do Hugging Face com acesso ao modelo em **Secrets** do Colab com o nome `HF_TOKEN`. O token nunca entra no código: o repositório é público.
+1. Abra o notebook no Google Colab com runtime **GPU de 22 GB ou mais** (A100 ou G4 de preferência; L4 funciona). T4 e TPU não servem para o teste. O congelamento (notebook 02, com o piloto já feito) e o notebook 04 rodam em CPU.
+2. Não é preciso token do Hugging Face: os dois modelos do estudo são abertos.
 3. Execute as células em ordem. O FinQA é baixado do repositório oficial ([czyssrs/FinQA](https://github.com/czyssrs/FinQA)) para `data/`.
 
 Os notebooks 02–04 importam `src/finrag.py`. No Colab, eles **clonam este repositório do GitHub**, então o que roda lá é o que está publicado: faça `git push` antes de abrir o notebook.
 
 **Ordem e regras da execução:**
 
-1. **Notebook 02** — roda o piloto no dev. Se a V7 passar (falha de formato < 5% em R1), grava `frozen_config.json` com o prompt, a precisão e a revisão de cada modelo. Qualquer ajuste de prompt é feito aqui, olhando só o dev.
+1. **Notebook 02** — roda o piloto no dev. Se a V7 passar (em R1: menos de 5% de saídas sem a linha `Answer:` e pelo menos 90% com resposta legível), grava `frozen_config.json` com o prompt, a precisão e a revisão de cada modelo. Qualquer ajuste de prompt é feito aqui, olhando só o dev.
 2. **Notebook 03** — roda o teste (1.147 × 6 condições por modelo). Só funciona se o código reproduzir os hashes do congelamento. Se a sessão cair, rode de novo: ele continua de onde parou.
 3. **Notebook 04** — faz a análise com os modelos que tiverem as seis condições completas.
 
-A precisão (4 bits na T4, bf16 em GPU com 22 GB ou mais) é decidida uma vez, no notebook 02, e vale para todos os modelos e todas as sessões.
+A precisão do estudo é bf16 (GPU com 22 GB ou mais). Ela foi a do piloto, fica gravada no congelamento e vale para os dois modelos e todas as sessões.
 
 ### Conferir o código localmente
 
@@ -104,9 +104,7 @@ Instalar como ferramenta (em vez de `uvx git+...`) evita o timeout de 30 s na in
 
 ## Estado e próximos passos
 
-O código dos notebooks 02–04 está pronto. Na GPU (T4, 4 bits) já rodaram as seções 1 a 4 do notebook 02 e testes curtos de geração com o Phi-4-mini e o Qwen3-8B no dev, que levaram à correção do parser e ao lembrete de formato no prompt. O piloto completo e o teste **ainda não foram executados**; a análise foi testada só com resultados sintéticos. Falta:
-
-1. Rodar o piloto no dev (notebook 02) na GPU, com `HF_TOKEN` para incluir o Llama 3.1, e conferir a V7.
-2. Rodar o teste (notebook 03).
-3. Rodar a análise (notebook 04) e conferir à mão a amostra de 50 erros por modelo.
-4. Escrever os resultados e a discussão.
+- **Piloto feito** (dev, bf16, GPU L4, prompt `bd940bbf`): os dois modelos passam na V7. Em R1, 150 perguntas: Qwen3-8B com 94,7% de saídas com resposta legível e 70,0% de acerto estrito; Phi-4-mini com 96,0% e 63,3%. Não é resultado do estudo: é a checagem do prompt.
+- **Falta congelar** com esse piloto (notebook 02, sem GPU; passos em [docs/EXECUCAO_COLAB.md](docs/EXECUCAO_COLAB.md)).
+- **Falta rodar o teste** (notebook 03): 6.882 gerações por modelo, primeiro o Qwen3-8B e depois o Phi-4-mini, com retomada pelo Drive (cerca de 28 h de GPU L4).
+- **Falta a análise** (notebook 04, testado só com resultados sintéticos) e a conferência manual da amostra de 50 erros por modelo.

@@ -10,3 +10,7 @@ __pycache__/
 .ipynb_checkpoints/
 .venv/
 .env
+
+# Resultados baixados do Drive (ficam fora do repositório)
+NLP - Checkpoints*.zip
+results/
