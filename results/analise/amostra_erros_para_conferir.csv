@@ -1,0 +1,907 @@
+model,code,id,pergunta,programa,gold_answer,parsed_answer,error_type,conferido_manual,raw_output
+phi4-mini,R1,ECL/2016/page_52.pdf-1,"what portion of cash and cash equivalents on hand are held in u.s . as of december 31 , 2016?","divide(327, 184), divide(#0, 327)",0.00543,43.75,cálculo,,"To determine the portion of cash and cash equivalents held in the U.S. as of December 31, 2016, we need to look at the total cash and cash equivalents and the amount held outside of the U.S.
+
+From the report, we know:
+- Total cash and cash equivalents on hand as of December 31, 2016: $327 million
+- Amount held outside of the U.S.: $184 million
+
+To find the amount held in the U.S., we subtract the amount held outside of the U.S. from the total amount:
+$327 million (total) - $184 million (outside U.S.) = $143 million (inside U.S.)
+
+Now, we calculate the portion of cash and cash equivalents held in the U.S. as a percentage of the total:
+($143 million / $327 million) * 100 = 43.75%
+
+Answer: 43.75%"
+phi4-mini,R1,SNA/2012/page_110.pdf-3,"what is the total fair value of the non-vested performance awards at beginning of year , ( in thousands ) ?","subtract(707, 48.87)",658.13,34515.29,extração,,"To find the total fair value of the non-vested performance awards at the beginning of the year, we need to look at the table provided in the report. The table shows that there were 707,000 shares of non-vested performance awards at the beginning of the year, with a fair value of $48.87 per share.
+
+To calculate the total fair value, we multiply the number of shares by the fair value per share:
+
+707,000 shares * $48.87 per share = $34,515,290
+
+Since the table provides the fair value in thousands, we need to divide the result by 1,000 to get the total fair value in the same unit as the table:
+
+$34,515,290 / 1,000 = $34,515.29
+
+Answer: $34,515.29"
+phi4-mini,R0,GS/2014/page_40.pdf-2,what is the growth rate in operating expenses in 2013?,"subtract(22469, 22956), divide(#0, 22956)",-0.02121,0.0,extração,,"To find the growth rate in operating expenses in 2013, we need to compare the operating expenses of 2013 to those of 2012.
+
+Operating expenses for 2013: $22.47 billion
+Operating expenses for 2012: $22.47 billion
+
+The formula to calculate the growth rate is:
+Growth Rate = [(Value in 2013 - Value in 2012) / Value in 2012] * 100
+
+Plugging in the values:
+Growth Rate = [($22.47 billion - $22.47 billion) / $22.47 billion] * 100
+Growth Rate = [0 / $22.47 billion] * 100
+Growth Rate = 0%
+
+Answer: 0%"
+phi4-mini,R2,GPN/2013/page_92.pdf-3,what portion of the future minimum lease payments are due in the next 12 months?,"divide(11057, 57096)",0.19366,15.68,extração,,"To find the portion of the future minimum lease payments due in the next 12 months, we need to look at the payments for the fiscal year ending May 31, 2015, as this is the next 12-month period following May 31, 2013.
+
+From the table, we can see that the future minimum lease payments for the fiscal year ending May 31, 2015, are $8,985.
+
+The total future minimum lease payments as of May 31, 2013, are $57,096.
+
+To find the portion due in the next 12 months, we divide the payments for the fiscal year ending May 31, 2015, by the total future minimum lease payments and then multiply by 100 to get a percentage:
+
+($8,985 / $57,096) * 100 = 15.68%
+
+Answer: 15.68%"
+phi4-mini,R4,ABMD/2007/page_78.pdf-3,what is the growth rate in the weighted average fair value for options granted between 2006 to 2007?,"subtract(6.91, 8.75), divide(#0, 8.75)",-0.21029,26.68,cálculo,,"To calculate the growth rate in the weighted average fair value for options granted between 2006 and 2007, we need to use the formula for the growth rate:
+
+Growth Rate = (Ending Value - Beginning Value) / Beginning Value * 100
+
+From the table, the weighted average grant-date fair value for options granted in 2006 is $6.91, and for 2007, it is $8.75.
+
+Now, we plug these values into the formula:
+
+Growth Rate = ($8.75 - $6.91) / $6.91 * 100
+
+Growth Rate = $1.84 / $6.91 * 100
+
+Growth Rate ≈ 26.68%
+
+Answer: 26.68%"
+phi4-mini,R5,UPS/2012/page_32.pdf-4,what is the roi of an investment in ups from 2008 to 2009?,"subtract(86.42, 80.20), divide(#0, 80.20)",0.07756,-13.58,extração,,"To calculate the ROI (Return on Investment) for an investment in UPS from 2008 to 2009, we need to look at the value of the investment at the beginning of 2008 and the value at the end of 2009.
+
+From the table, the value of the investment on 12/31/2007 (the beginning of 2008) was $100.00, and the value on 12/31/2009 (the end of 2009) was $86.42.
+
+The formula for ROI is:
+\[ \text{ROI} = \frac{\text{Final Value} - \text{Initial Value}}{\text{Initial Value}} \times 100 \]
+
+Plugging in the values:
+\[ \text{ROI} = \frac{86.42 - 100.00}{100.00} \times 100 \]
+\[ \text{ROI} = \frac{-13.58}{100.00} \times 100 \]
+\[ \text{ROI} = -13.58\% \]
+
+Answer: -13.58%"
+phi4-mini,R5,DRE/2008/page_46.pdf-1,what is the net income per common share in 2008?,"divide(56616, 146915)",0.38537,3857140.0,extração,,"To calculate the net income per common share for 2008, we need to divide the net income available for common shareholders by the weighted average number of common shares outstanding for the period.
+
+From the table provided, the net income available for common shareholders in 2008 is $566,160,000 (in thousands), and the weighted average number of common shares outstanding is 146,915 (in thousands).
+
+Now, we perform the division:
+
+$566,160,000 / 146,915 = 3,857.14 (in thousands)
+
+To express this in dollars, we multiply by 1,000:
+
+3,857.14 * 1,000 = $3,857,140
+
+Answer: $3,857,140"
+phi4-mini,R1,UNP/2016/page_52.pdf-3,what percentage of total operating revenues from 2014-2016 is the revenue from coal?,"add(19941, 21813), add(#0, 23988), add(2440, 3237), add(#2, 4127), divide(#3, #1)",0.14913,15.44,extração,,"To find the percentage of total operating revenues from 2014-2016 that is the revenue from coal, we need to calculate the total revenue from coal over these three years and then divide it by the total operating revenues for each year, and finally average these percentages.
+
+First, let's calculate the total revenue from coal over the three years:
+2014: $4127 million
+2015: $3237 million
+2016: $2440 million
+Total coal revenue: $4127 + $3237 + $2440 = $9804 million
+
+Next, we calculate the total operating revenues for each year and then find the percentage of coal revenue for each year:
+2014: $23988 million
+2015: $20397 million
+2016: $19941 million
+
+Now, we calculate the percentage of coal revenue for each year:
+2014: ($4127 / $23988) * 100 = 17.23%
+2015: ($3237 / $20397) * 100 = 15.84%
+2016: ($2440 / $19941) * 100 = 12.23%
+
+Finally, we average these percentages to find the overall percentage of total operating revenues from 2014-2016 that is the revenue from coal:
+(17.23% + 15.84% + 12.23%) / 3 = 15.44%
+
+Answer: 15.44%"
+phi4-mini,R3,FIS/2012/page_48.pdf-2,what is the percentage change in the impact of euro from 2011 to 2012?,"subtract(27.1, 26.4), divide(#0, 26.4)",0.02652,2.61,cálculo,,"To find the percentage change in the impact of the euro from 2011 to 2012, we need to calculate the difference between the euro values of 2012 and 2011, and then divide that difference by the euro value of 2011. Finally, we multiply the result by 100 to get the percentage.
+
+The euro value in 2012 is 27.1, and the euro value in 2011 is 26.4. The difference is 27.1 - 26.4 = 0.7.
+
+Now, we divide the difference by the euro value of 2011: 0.7 / 26.4 = 0.02613636.
+
+To get the percentage, we multiply by 100: 0.02613636 * 100 = 2.613636%.
+
+Rounding to two decimal places, the percentage change is 2.61%.
+
+Answer: 2.61%"
+phi4-mini,R0,DVN/2015/page_79.pdf-1,what is the range of the 2014 grant-date fair value?,"subtract(85.05, 81.99)",3.06,81.99,extração,,"The 2014 grant-date fair value is given as $81.99 in the table. The range of the 2014 grant-date fair value is not explicitly stated in the table, but since there is only one value provided for 2014, we can infer that the range is just that single value. Therefore, the range of the 2014 grant-date fair value is $81.99.
+
+Answer: $81.99"
+phi4-mini,R2,AMT/2006/page_104.pdf-2,what portion of the ati 7.25% ( 7.25 % ) notes was paid off during 2006?,"subtract(325.1, 400.0), divide(#0, 400.0)",-0.18725,18.73,extração,,"To determine the portion of the ATI 7.25% notes paid off during 2006, we need to look at the table provided. The table shows the principal amount of ATI 7.25% notes repurchased in 2006, which is $74.9 million. We also need to know the total principal amount of ATI 7.25% notes outstanding as of December 31, 2005, which is $400.0 million.
+
+Now, we calculate the portion of the notes paid off by dividing the repurchased amount by the total outstanding amount and then multiplying by 100 to get the percentage:
+
+Portion paid off = ($74.9 million / $400.0 million) * 100
+
+Now, let's do the math:
+
+Portion paid off = (0.18725) * 100 = 18.725%
+
+Rounding to two decimal places, the portion of the ATI 7.25% notes paid off during 2006 is 18.73%.
+
+Answer: 18.73%"
+phi4-mini,R0,CME/2010/page_69.pdf-4,"as of december 31 , 2010 what was the par value of the debt outstanding for the fixed rate notes due february 2014 compared to term loan due 2011","divide(420.5, 750.0)",0.56067,750.0,cálculo,,"To find the par value of the debt outstanding for the fixed rate notes due February 2014 compared to the term loan due 2011, we need to look at the table provided in the report.
+
+The table shows:
+- Term loan due 2011: $420.5 million
+- Fixed rate notes due February 2014: $750.0 million
+
+Now, we compare the two amounts:
+$750.0 million (fixed rate notes due February 2014) is greater than $420.5 million (term loan due 2011).
+
+Answer: 750.0 million is greater than 420.5 million."
+phi4-mini,R1,MRO/2006/page_93.pdf-4,"as of december 31 , 2005 , what was the before tax charge related to adopting fin no . 47 in millions?","add(19, 12)",31.0,41.0,extração,,"To determine the before-tax charge related to adopting fin no. 47 as of December 31, 2005, we need to look at the total amount of the liability for asset retirement obligations as of December 31, 2005, and the total assets and liabilities at the time of adoption.
+
+From the table provided:
+- The liability for asset retirement obligations as of December 31, 2005, is $711 million.
+- Total assets increased by $22 million.
+- Total liabilities increased by $41 million.
+
+The before-tax charge is the increase in total liabilities, which is $41 million.
+
+Answer: 41.00 million"
+phi4-mini,R4,STT/2011/page_69.pdf-3,what was the percent of the aggregate restructuring costs that were employee-related costs in 2010,"divide(105, 190)",0.55263,67.31,extração,,"To find the percentage of the aggregate restructuring costs that were employee-related costs in 2010, we need to divide the employee-related costs by the total restructuring costs for 2010 and then multiply by 100 to get the percentage.
+
+From the table, the employee-related costs for 2010 were $105 million, and the total restructuring costs for 2010 were $156 million.
+
+Now, we calculate the percentage:
+
+($105 million / $156 million) * 100 = 67.31%
+
+Answer: 67.31%"
+phi4-mini,R3,ADBE/2008/page_89.pdf-2,what is the percentage change in the the gross liability for unrecognized tax benefits during 2008 compare to 2007?,"subtract(139549, 201808), divide(#0, 201808)",-0.30851,-0.386,extração,,"To calculate the percentage change in the gross liability for unrecognized tax benefits during 2008 compared to 2007, we need to follow these steps:
+
+1. Identify the beginning balance of the gross liability for unrecognized tax benefits as of December 1, 2007, which is $140,090.
+2. Identify the ending balance of the gross liability for unrecognized tax benefits as of November 28, 2008, which is $139,549.
+3. Calculate the change in the gross liability by subtracting the beginning balance from the ending balance: $139,549 - $140,090 = -$541.
+4. Calculate the percentage change by dividing the change in the gross liability by the beginning balance and then multiplying by 100 to get a percentage: (-$541 / $140,090) * 100.
+
+Now, let's do the math:
+
+(-$541 / $140,090) * 100 = -0.386%
+
+The percentage change in the gross liability for unrecognized tax benefits during 2008 compared to 2007 is a decrease of approximately 0.386%.
+
+Answer: -0.386%"
+phi4-mini,R5,AES/2001/page_33.pdf-2,what was the difference in the companies high compared to its low sales price for the second quarter of 2001?,"subtract(52.25, 39.95)",12.3,20.2,extração,,"To find the difference in the company's high compared to its low sales price for the second quarter of 2001, we need to look at the high and low prices for that period in the table.
+
+High price for the second quarter of 2001: $60.15
+Low price for the second quarter of 2001: $39.95
+
+Now, subtract the low price from the high price to find the difference.
+
+$60.15 - $39.95 = $20.20
+
+Answer: 20.20"
+phi4-mini,R3,ILMN/2008/page_82.pdf-1,during 2008 what was the share price of the warrants exercised\\n,"divide(const_3, 401362)",1e-05,7.27,cálculo,,"To find the share price of the warrants exercised during 2008, we need to look at the table provided in the report. The table lists the number of shares and the exercise price for the warrants that were exercised in 2008. The relevant row for 2008 is:
+
+- Number of shares: 401,362
+- Exercise price: $7.27
+
+The share price of the warrants exercised is the same as the exercise price, which is $7.27.
+
+Answer: $7.27"
+phi4-mini,R2,CME/2017/page_40.pdf-1,what is the anualized return for cme group from 2012 to 2017?,"subtract(370.32, 100), divide(#0, 100), divide(const_1, const_5), exp(#1, #2), subtract(#3, const_1)",0.22004,17.97,cálculo,,"To calculate the annualized return for CME Group from 2012 to 2017, we need to use the formula for the compound annual growth rate (CAGR), which is:
+
+CAGR = (Ending Value / Beginning Value) ^ (1 / Number of Years) - 1
+
+From the table, the beginning value in 2012 is $164.01, and the ending value in 2017 is $370.32. The number of years is 2017 - 2012 = 5 years.
+
+CAGR = ($370.32 / $164.01) ^ (1 / 5) - 1
+
+Now, let's calculate the CAGR:
+
+CAGR = (2.2595) ^ (0.2) - 1
+CAGR = 1.1797 - 1
+CAGR = 0.1797
+
+To express this as a percentage, we multiply by 100:
+
+CAGR = 0.1797 * 100
+CAGR = 17.97%
+
+Answer: 17.97%"
+phi4-mini,R3,MRO/2013/page_19.pdf-2,by how much did net undeveloped acres expiring decrease from 2015 to 2016?,"subtract(236, 3057), divide(#0, 3057)",-0.9228,2416.0,extração,,"To determine the decrease in net undeveloped acres expiring from 2015 to 2016, we need to look at the values provided in the table for those years.
+
+- Net undeveloped acres expiring in 2015: 2605 thousand acres
+- Net undeveloped acres expiring in 2016: 189 thousand acres
+
+Now, we subtract the 2016 value from the 2015 value:
+
+2605 - 189 = 2416 thousand acres
+
+So, the net undeveloped acres expiring decreased by 2416 thousand acres from 2015 to 2016.
+
+Answer: 2416"
+phi4-mini,R3,ETFC/2012/page_43.pdf-3,what was the change in the net impairment from 2011 to 2012,"subtract(-16.9, -14.9), divide(const_2, 14.9)",0.13423,-2.0,cálculo,,"To find the change in net impairment from 2011 to 2012, we need to subtract the net impairment in 2011 from the net impairment in 2012.
+
+Net impairment in 2012: $ -16.9 million
+Net impairment in 2011: $ -14.9 million
+
+Change in net impairment = Net impairment in 2012 - Net impairment in 2011
+Change in net impairment = (-16.9) - (-14.9)
+Change in net impairment = -16.9 + 14.9
+Change in net impairment = -2.0 million
+
+Answer: -2.0 million"
+phi4-mini,R1,AON/2015/page_96.pdf-2,what was the average aggregate intrinsic value of stock options exercised from 2013 to 2015,"add(104, 61), add(73, #0), divide(#1, const_2), add(#2, const_3), divide(#3, const_2)",61.0,79.33,cálculo,,"To find the average aggregate intrinsic value of stock options exercised from 2013 to 2015, we need to add the aggregate intrinsic values for each year and then divide by the number of years.
+
+From the table, we have:
+- 2013: $73 million
+- 2014: $61 million
+- 2015: $104 million
+
+Now, we add these values together: $73 + $61 + $104 = $238 million
+
+Next, we divide by the number of years, which is 3: $238 million / 3 = $79.33 million
+
+Answer: $79.33 million"
+phi4-mini,R0,ILMN/2003/page_58.pdf-1,what was the cumulative total stockholder return percentage for illumina inc . common stock for the four years end 2003?,"subtract(43.81, const_100), divide(#0, const_100)",-0.5619,3.9,extração,,"To calculate the cumulative total stockholder return percentage for Illumina Inc. common stock for the four years ending 2003, we need to compare the value of the investment at the end of the period to the initial investment.
+
+The initial investment was $100 on July 27, 2000. The value of the investment on December 29, 2000, was $100.39. To find the return percentage, we use the formula:
+
+(Cumulative Return Percentage) = ((Ending Value / Beginning Value) - 1) * 100
+
+Plugging in the values:
+
+(Cumulative Return Percentage) = ((100.39 / 100) - 1) * 100
+(Cumulative Return Percentage) = (1.039 - 1) * 100
+(Cumulative Return Percentage) = 0.039 * 100
+(Cumulative Return Percentage) = 3.9%
+
+Answer: 3.9%"
+phi4-mini,R0,UPS/2007/page_98.pdf-2,what is the average expected dividend per share in 2007?,"multiply(2.13%, 64.20)",1.36746,1.32,extração,,"To find the average expected dividend per share in 2007, we need to look at the expected dividend yield for 2007 and the average price paid per share in 2007. The expected dividend yield for 2007 is 2.13%. The average price paid per share in 2007 is $62.12.
+
+To calculate the average expected dividend per share, we multiply the expected dividend yield by the average price paid per share:
+
+Average expected dividend per share = Expected dividend yield * Average price paid per share
+Average expected dividend per share = 2.13% * $62.12
+
+Now, let's do the calculation:
+
+Average expected dividend per share = 0.0213 * $62.12
+Average expected dividend per share = $1.320956
+
+Rounded to two decimal places, the average expected dividend per share in 2007 is $1.32.
+
+Answer: 1.32"
+phi4-mini,R3,AMT/2007/page_29.pdf-2,what portion of the woburn property owned by the american tower corporation is subleased?,"divide(163000, 57800), divide(#0, 163000)",2e-05,100.0,extração,,"The report states that the woburn property is owned by the American Tower Corporation and that it contains a total of 163,000 square feet of space. Approximately 57,100 square feet of this space is occupied by the lease administration office and the broadcast division, and the remaining space is leased to unaffiliated tenants. To find the portion of the property that is subleased, we need to calculate the ratio of the leased space to the total owned space.
+
+The owned space is 57,100 square feet, and the leased space is 163,000 - 57,100 = 105,900 square feet.
+
+Now, we calculate the ratio of the leased space to the total owned space:
+
+Leased space / Total owned space = 105,900 / 57,100
+
+To express this as a percentage, we multiply by 100:
+
+(105,900 / 57,100) * 100 = 185.00%
+
+Since the percentage exceeds 100%, it indicates that the entire owned space is subleased, and there is additional leased space that is not owned by the American Tower Corporation. However, the question specifically asks for the portion of the owned property that is subleased, which is the entire owned space.
+
+Answer: 100%"
+phi4-mini,R1,UNP/2016/page_52.pdf-2,in 2015 what was the percent of the total operating revenue that was from chemical freight,"divide(3474, 19941)",0.17421,16.27,extração,,"To find the percentage of the total operating revenue that was from chemical freight in 2015, we need to look at the total operating revenues for 2015 and the chemical freight revenues for the same year. From the table provided, the total operating revenues for 2015 were $21,813 million, and the chemical freight revenues were $3,543 million.
+
+Now, we calculate the percentage by dividing the chemical freight revenues by the total operating revenues and then multiplying by 100 to get the percentage:
+
+($3,543 million / $21,813 million) * 100 = 16.27%
+
+Answer: 16.27%"
+phi4-mini,R4,SNA/2013/page_84.pdf-2,what is the difference between total sales and total payments received during 2013?,"subtract(546.5, 516.9)",29.6,472.5,extração,,"To find the difference between total sales and total payments received during 2013, we need to look at the trade and other accounts receivable for 2013, which represents the total sales, and the finance and contract receivables, which represent the total payments received.
+
+From the table provided, we have:
+- Trade and other accounts receivable for 2013: $546.5 million
+- Finance and contract receivables: $74 million
+
+The difference between total sales and total payments received is the trade and other accounts receivable minus the finance and contract receivables.
+
+Difference = Trade and other accounts receivable - Finance and contract receivables
+Difference = $546.5 million - $74 million
+Difference = $472.5 million
+
+Answer: $472.5 million"
+phi4-mini,R1,AMT/2014/page_149.pdf-1,was the change in asset impairment charges between 2014 and 2013 in us$ m?,"subtract(11.2, 15.9)",-4.7,4.7,cálculo,,"To find the change in asset impairment charges between 2014 and 2013, we need to look at the impairment charges for each year and then calculate the difference.
+
+For 2014, the impairment charge was $11.2 million.
+For 2013, the impairment charge was $15.9 million.
+
+Now, we subtract the 2014 charge from the 2013 charge to find the change:
+
+$15.9 million (2013) - $11.2 million (2014) = $4.7 million
+
+The change in asset impairment charges between 2014 and 2013 was $4.7 million.
+
+Answer: $4.7 million"
+phi4-mini,R4,BLL/2012/page_31.pdf-4,the five year total return for the period ending 12/31/2012 on ball corporation stock was how much greater than the same return on the dj us containers & packaging index?,"subtract(207.62, 97.13)",110.49,99.86,extração,,"To find the five-year total return for Ball Corporation stock, we look at the value on 12/31/2012, which is $207.62. For the DJ US Containers & Packaging Index, the value on 12/31/2012 is $107.76. To find the total return, we calculate the percentage increase from the initial $100 investment.
+
+For Ball Corporation:
+($207.62 - $100) / $100 = 1.0762 or 107.62%
+
+For DJ US Containers & Packaging Index:
+($107.76 - $100) / $100 = 0.0776 or 7.76%
+
+Now, we subtract the DJ US Containers & Packaging Index return from the Ball Corporation return to find the difference:
+107.62% - 7.76% = 99.86%
+
+Answer: 99.86%"
+phi4-mini,R5,WRK/2018/page_107.pdf-4,what percent would the balance by the end of 2018 increase if the unrecognized tax benefits were included?,"add(108.7, 138.0), add(#0, 127.1), subtract(#1, 127.1), divide(#2, 127.1)",1.94099,14.52,extração,,"The balance at the end of fiscal year 2018 was $127.1 million, and if all unrecognized tax benefits were included, the total amount would be approximately $108.7 million. To find the percentage increase, we subtract the original balance from the new balance and then divide by the original balance:
+
+($108.7 million - $127.1 million) / $127.1 million = -$18.4 million / $127.1 million = -0.1452 = -14.52%
+
+Since the question asks for the increase, we take the absolute value of the result:
+
+Answer: 14.52%"
+phi4-mini,R3,AMAT/2013/page_37.pdf-2,what is the total return if 100000 are invested in s&p500 in 2008 and sold in 2011?,"subtract(138.29, const_100), divide(100000, const_100), multiply(#1, #0)",38290.0,38.29,cálculo,,"To calculate the total return on an investment of $100,000 in the S&P 500 index from October 26, 2008, to October 30, 2011, we need to follow these steps:
+
+1. Determine the value of the investment at the end of the period.
+2. Calculate the total return as a percentage of the initial investment.
+
+From the table provided, the S&P 500 index value on October 26, 2008, was 100.00, and on October 30, 2011, it was 138.29.
+
+Step 1: Calculate the value of the investment at the end of the period.
+Value at the end of the period = (S&P 500 index value at the end of the period / S&P 500 index value at the beginning of the period) * Initial investment
+Value at the end of the period = (138.29 / 100.00) * $100,000
+Value at the end of the period = 1.3829 * $100,000
+Value at the end of the period = $138,290
+
+Step 2: Calculate the total return as a percentage of the initial investment.
+Total return (%) = [(Value at the end of the period - Initial investment) / Initial investment] * 100
+Total return (%) = [($138,290 - $100,000) / $100,000] * 100
+Total return (%) = ($38,290 / $100,000) * 100
+Total return (%) = 0.3829 * 100
+Total return (%) = 38.29%
+
+Answer: 38.29%"
+phi4-mini,R2,GPN/2008/page_78.pdf-1,what is the average amortization expense related to customer-related intangible assets?,"divide(4091, 14)",292.21429,292214.29,extração,,"To find the average amortization expense related to customer-related intangible assets, we need to know the total value of these assets and their amortization period. From the table, we know the total value of customer-related intangible assets is $4,091,000 and their amortization period is up to 14 years. 
+
+The average annual amortization expense is calculated by dividing the total value by the amortization period. 
+
+Average Amortization Expense = Total Value of Customer-Related Intangible Assets / Amortization Period
+Average Amortization Expense = $4,091,000 / 14 years
+Average Amortization Expense = $292,214.29 per year
+
+Answer: $292,214.29"
+phi4-mini,R4,INTC/2013/page_31.pdf-4,what was the percent of the increase in the dow jones u.s . technology index from 2011 to 2012,"divide(209, 191), divide(#0, 191)",0.00573,9.44,cálculo,,"To find the percent increase in the Dow Jones U.S. Technology Index from 2011 to 2012, we need to calculate the difference in value between these two years and then divide by the value in 2011, and finally multiply by 100 to get the percentage.
+
+The value in 2011 was $191, and the value in 2012 was $209.
+
+The increase is $209 - $191 = $18.
+
+Now, we divide the increase by the 2011 value: $18 / $191 = 0.0944.
+
+To get the percentage, we multiply by 100: 0.0944 * 100 = 9.44%.
+
+Answer: 9.44%"
+phi4-mini,R2,C/2009/page_197.pdf-1,what was the tax rate applied applied to the goodwill impairment charge in the fourth quarter of 2008,"subtract(9.6, 8.7), divide(#0, 8.7)",0.10345,90.63,cálculo,,"The report states that the goodwill impairment charge was $9.6 billion pretax, which translates to $8.7 billion after-tax. To find the tax rate, we can use the formula:
+
+Tax Rate = (Tax Amount / Pretax Amount) * 100
+
+Plugging in the values:
+
+Tax Rate = ($8.7 billion / $9.6 billion) * 100
+
+Tax Rate = 0.90625 * 100
+
+Tax Rate = 90.625%
+
+Since the report already provides the after-tax amount, we can confirm that the tax rate applied to the goodwill impairment charge in the fourth quarter of 2008 was approximately 90.63%.
+
+Answer: 90.63%"
+phi4-mini,R2,JPM/2009/page_175.pdf-5,"what is the increase of the total trading assets between the years 2007 and 2008 , in millions of dollars?","add(384102, 121417), add(381415, 65439), subtract(#0, #1)",58665.0,2687.0,extração,,"To find the increase in total trading assets between 2007 and 2008, we need to look at the total trading assets for both years and then subtract the 2007 total from the 2008 total.
+
+From the table:
+- Total trading assets for 2007: $381,415 million
+- Total trading assets for 2008: $384,102 million
+
+Now, we subtract the 2007 total from the 2008 total:
+$384,102 million - $381,415 million = $2,687 million
+
+The increase in total trading assets between 2007 and 2008 is $2,687 million.
+
+Answer: 2687"
+phi4-mini,R3,ETR/2008/page_298.pdf-4,what is the percent change in receivables from the money pool between 2007 and 2008?,"subtract(11589, 55509), divide(#0, 55509)",-0.79122,108.7,extração,,"To find the percent change in receivables from the money pool between 2007 and 2008, we need to use the formula for percent change:
+
+Percent Change = [(New Value - Old Value) / Old Value] * 100
+
+From the table, the receivables from the money pool for 2007 is $55,509 thousand, and for 2008, it is $115,890 thousand.
+
+Now, we plug these values into the formula:
+
+Percent Change = [($115,890 - $55,509) / $55,509] * 100
+Percent Change = [$60,381 / $55,509] * 100
+Percent Change = 1.087 * 100
+Percent Change = 108.7%
+
+Answer: 108.7%"
+phi4-mini,R1,FBHS/2017/page_83.pdf-2,what was the percentage change in the weighted average fair value on the date of the award of the common stock,"subtract(63.43, 57.37), divide(#0, 57.37)",0.10563,9.06,extração,,"To calculate the percentage change in the weighted average fair value on the date of the award of the common stock, we need to compare the weighted average fair value at the end of 2016 with that at the end of 2017.
+
+The weighted average grant-date fair value at the end of 2016 was $48.00, and at the end of 2017, it was $52.35.
+
+The formula to calculate the percentage change is:
+
+Percentage Change = [(New Value - Old Value) / Old Value] * 100
+
+Plugging in the values:
+
+Percentage Change = [($52.35 - $48.00) / $48.00] * 100
+Percentage Change = [$4.35 / $48.00] * 100
+Percentage Change = 0.090625 * 100
+Percentage Change = 9.0625%
+
+Answer: 9.06%"
+phi4-mini,R5,GS/2017/page_86.pdf-2,"in millions for the fourth quarters of 2017 and 2016 , what was the total tier 1 capital?","add(78227, 81808)",160035.0,78227.0,cálculo,,"To find the total Tier 1 capital for the fourth quarters of 2017 and 2016, we need to look at the Tier 1 capital figures provided for the end of each year, as the report does not provide separate figures for the fourth quarters. We will assume that the Tier 1 capital at the end of each year is representative of the Tier 1 capital at the end of the fourth quarter.
+
+For 2017, the Tier 1 capital is $78,227 million.
+For 2016, the Tier 1 capital is $81,808 million.
+
+Since the report does not provide separate figures for the fourth quarters, we will use the end-of-year figures as the total Tier 1 capital for the fourth quarters of both 2017 and 2016.
+
+Answer: $78,227 million for 2017 and $81,808 million for 2016."
+phi4-mini,R2,DRE/2008/page_46.pdf-1,what is the net income per common share in 2008?,"divide(56616, 146915)",0.38537,0.39,extração,,"To calculate the net income per common share for 2008, we need to divide the net income available for common shareholders by the weighted average number of common shares outstanding.
+
+From the table, we have:
+- Net income available for common shareholders in 2008: $56,616,000
+- Weighted average number of common shares outstanding in 2008: 146,915,000
+
+Now, we perform the division:
+$56,616,000 / 146,915,000 = 0.3859
+
+To express this as a number with two decimal places, we round it to 0.39.
+
+Answer: 0.39"
+phi4-mini,R0,STT/2014/page_54.pdf-2,what is the roi of an investment in state street corporation from 20011 to 2012?,"subtract(101, 114), divide(#0, 114)",-0.11404,77.57,extração,,"To calculate the ROI (Return on Investment) for an investment in State Street Corporation from 2011 to 2012, we need to follow these steps:
+
+1. Determine the value of the investment at the beginning of 2011 and at the end of 2012.
+2. Calculate the ROI using the formula: ROI = (Ending Value - Beginning Value) / Beginning Value * 100%.
+
+From the table, the value of the investment in State Street Corporation at the end of 2010 (beginning of 2011) is $107, and at the end of 2012 is $190.
+
+Now, let's calculate the ROI:
+
+Beginning Value (2011) = $107
+Ending Value (2012) = $190
+
+ROI = (Ending Value - Beginning Value) / Beginning Value * 100%
+ROI = ($190 - $107) / $107 * 100%
+ROI = $83 / $107 * 100%
+ROI ≈ 77.57%
+
+Answer: 77.57%"
+phi4-mini,R2,DVN/2018/page_35.pdf-4,what was the tax rate on the net earnings due to the gain on the sale of our aggregate ownership interests in enlink discontinued operations,"subtract(2.6, 2.2), divide(#0, 2.2)",0.18182,2.0,extração,,"To find the tax rate on the net earnings due to the gain on the sale of our aggregate ownership interests in Enlink, we need to look at the effective income tax rate for 2017, as the gain occurred in that year. The table provided shows that the effective income tax rate for 2017 was 2%.
+
+Answer: 2%"
+phi4-mini,R1,ECL/2017/page_69.pdf-2,what is the percentage change in the total carrying amount of goodwill from 2016 to 2017?,"subtract(7167.1, 6383.0), divide(#0, 6383.0)",0.12284,-3.38,extração,,"To find the percentage change in the total carrying amount of goodwill from 2016 to 2017, we need to compare the total carrying amount of goodwill at the end of 2016 with the total carrying amount at the end of 2017.
+
+From the table, the total carrying amount of goodwill at the end of 2016 is $6,383.0 million, and at the end of 2017, it is $6,167.1 million.
+
+The formula to calculate the percentage change is:
+\[ \text{Percentage Change} = \left( \frac{\text{New Value} - \text{Old Value}}{\text{Old Value}} \right) \times 100 \]
+
+Plugging in the values:
+\[ \text{Percentage Change} = \left( \frac{6,167.1 - 6,383.0}{6,383.0} \right) \times 100 \]
+\[ \text{Percentage Change} = \left( \frac{-215.9}{6,383.0} \right) \times 100 \]
+\[ \text{Percentage Change} = -3.38\% \]
+
+Answer: -3.38%"
+phi4-mini,R5,AAL/2013/page_18.pdf-2,what is the growth rate in the price of aircraft fuel per gallon from 2012 to 2013?,"subtract(3.09, 3.20), divide(#0, 3.20)",-0.03438,3.44,cálculo,,"To calculate the growth rate in the price of aircraft fuel per gallon from 2012 to 2013, we need to find the difference in the average cost per gallon between the two years and then divide that difference by the average cost per gallon in 2012.
+
+The average cost per gallon in 2012 was $3.20, and in 2013 it was $3.09.
+
+Difference in cost = $3.20 - $3.09 = $0.11
+
+Now, we divide the difference by the 2012 cost to find the growth rate:
+
+Growth rate = ($0.11 / $3.20) * 100 = 3.4375%
+
+Rounded to two decimal places, the growth rate is 3.44%.
+
+Answer: 3.44%"
+phi4-mini,R1,SLG/2011/page_91.pdf-2,what was the percent of the change in the compensation expense in connection with connection with the 2005 outperformance plan.during from 2009 to 2010,"subtract(1.6, 2.3), divide(#0, 2.3)",-0.30435,-91.3,extração,,"To find the percent change in the compensation expense in connection with the 2005 outperformance plan from 2009 to 2010, we need to look at the compensation expense recorded for the 2005 outperformance plan for both years and then calculate the percentage change.
+
+From the report, we have the following compensation expenses for the 2005 outperformance plan:
+- For the year ended December 31, 2009: $2.3 million
+- For the year ended December 31, 2010: $0.2 million
+
+The formula to calculate the percent change is:
+[(New Value - Old Value) / Old Value] * 100
+
+Plugging in the values we have:
+[(0.2 million - 2.3 million) / 2.3 million] * 100
+
+Now, let's do the math:
+= [(-2.1 million) / 2.3 million] * 100
+= -0.913043478 * 100
+= -91.3043478%
+
+The percent change in the compensation expense in connection with the 2005 outperformance plan from 2009 to 2010 is approximately -91.30%.
+
+Answer: -91.30%"
+phi4-mini,R2,LKQ/2016/page_87.pdf-2,what was the percentage change in rental expense for operating leases from 2015 to 2016?,"subtract(211.5, 168.4), divide(#0, 168.4)",0.25594,42.42,extração,,"To find the percentage change in rental expense for operating leases from 2015 to 2016, we need to compare the rental expenses for these two years and calculate the percentage change.
+
+The rental expense for 2015 was $148.5 million, and for 2016 it was $211.5 million.
+
+The formula to calculate the percentage change is:
+
+Percentage Change = [(New Value - Old Value) / Old Value] * 100
+
+Plugging in the values:
+
+Percentage Change = [($211.5 million - $148.5 million) / $148.5 million] * 100
+
+Percentage Change = [$63 million / $148.5 million] * 100
+
+Percentage Change = 0.4242 * 100
+
+Percentage Change = 42.42%
+
+Answer: 42.42%"
+phi4-mini,R2,GS/2013/page_220.pdf-4,what was the percentage cumulative total return for goldman sachs group inc . for the five year period ending 12/31/13?,"subtract(248.36, const_100), divide(#0, const_100)",1.4836,248.36,cálculo,,"To calculate the percentage cumulative total return for Goldman Sachs Group Inc. for the five-year period ending 12/31/13, we need to compare the value of the investment at the end of the period to the initial investment amount.
+
+The initial investment amount on 12/26/08 was $100.00, and the value of the investment at the end of the period (12/31/13) was $248.36.
+
+The formula to calculate the percentage cumulative total return is:
+
+(Cumulative Total Return / Initial Investment) * 100
+
+Plugging in the values:
+
+($248.36 / $100.00) * 100 = 248.36%
+
+Answer: 248.36%"
+phi4-mini,R4,EMR/2017/page_78.pdf-2,at the average grant date fair value per share what is the value in thousands of the shares outstanding but not yet earned under incentive shares at the end of the year ? \\n,"multiply(50.33, 4999)",251599.67,252.49,cálculo,,"To find the value in thousands of the shares outstanding but not yet earned under incentive shares at the end of the year, we need to multiply the number of shares by the average grant date fair value per share.
+
+Number of shares outstanding but not yet earned: 4999 shares
+Average grant date fair value per share: $ 50.33
+
+Value in thousands = 4999 shares * $ 50.33 per share / 1000 = $ 252.49 thousand
+
+Answer: 252.49"
+phi4-mini,R3,KHC/2018/page_132.pdf-2,"in july and august 2018 , what percent of debt carrying debt in december did they pay off?","add(31.2, 2.7), divide(2.7, #0)",0.07965,8.97,extração,,"To determine the percentage of debt carrying debt that was paid off in July and August 2018, we need to look at the debt repayments made during that period and compare it to the total debt carrying debt as of December 29, 2018.
+
+From the report, we know that in July and August 2018, $2.7 billion of senior notes were repaid. The total debt carrying debt as of December 29, 2018, was $30.1 billion.
+
+Now, we calculate the percentage:
+
+($2.7 billion / $30.1 billion) * 100 = 8.97%
+
+Answer: 8.97%"
+phi4-mini,R4,PNC/2007/page_92.pdf-1,"at december 31 , 2007 , what percentage of the $ 14.4 billion of home equity loans ( included in 201cconsumer 201d in the table above ) had a loan-to-value ratio greater than 90%.?","divide(2.7, 14.4)",0.1875,20.83,extração,,"To find the percentage of the $14.4 billion of home equity loans that had a loan-to-value ratio greater than 90%, we need to look at the amount of loans with a loan-to-value ratio greater than 90% and divide it by the total amount of home equity loans, then multiply by 100 to get the percentage.
+
+From the report, we know that $3.0 billion of the $14.4 billion of residential mortgage loans had a loan-to-value ratio greater than 90%.
+
+Now we calculate the percentage:
+
+($3.0 billion / $14.4 billion) * 100 = 20.83%
+
+Answer: 20.83%"
+phi4-mini,R3,ABMD/2008/page_86.pdf-1,"assuming the same level of settlements as in fiscal 2007 , what would be the ending balance at march 31 2008 in millions for unrecognized tax benefits?\\n","subtract(168, 56)",112.0,168.0,cálculo,,"To determine the ending balance at March 31, 2008, for unrecognized tax benefits, we need to consider the beginning balance at April 1, 2007, and the reduction for tax positions for the closing of the applicable statute of limitations.
+
+From the table:
+- The beginning balance at April 1, 2007, is $224 million.
+- The reduction for tax positions for the closing of the applicable statute of limitations is $56 million.
+
+To find the ending balance at March 31, 2008:
+- Subtract the reduction from the beginning balance: $224 million - $56 million = $168 million.
+
+Answer: 168"
+phi4-mini,R4,AMT/2014/page_160.pdf-2,what portion of future lease payments are due after 5 years?,"divide(4214600, 6903188)",0.61053,76.09,extração,,"To find the portion of future lease payments due after 5 years, we need to look at the lease payments for the years after 2015, which are 2016, 2017, 2018, and 2019. We will sum these payments and then divide by the total future lease payments to find the portion due after 5 years.
+
+Payments after 2015: 2016 ($553,864k) + 2017 ($538,405k) + 2018 ($519,034k) + 2019 ($502,847k) = $2,113,050k
+
+Total future lease payments: 2015 ($574,438k) + 2016 ($553,864k) + 2017 ($538,405k) + 2018 ($519,034k) + 2019 ($502,847k) = $2,788,498k
+
+Portion after 5 years: $2,113,050k / $2,788,498k = 0.7609 or 76.09%
+
+Answer: 76.09%"
+qwen3-8b,R1,MSI/2008/page_69.pdf-3,in 2006 what was the percent of the operating earnings to the segment net sales,"divide(2690, 18988)",0.14167,9.48,extração,,"To calculate the percentage of operating earnings to segment net sales in 2006, we use the values from the table:
+
+- Segment net sales in 2006: $28,383 million
+- Operating earnings (loss) in 2006: $2,690 million
+
+The formula is:  
+$$ \text{Percentage} = \left( \frac{\text{Operating earnings}}{\text{Segment net sales}} \right) \times 100 $$
+
+$$ \text{Percentage} = \left( \frac{2690}{28383} \right) \times 100 \approx 9.48\% $$
+
+Answer: 9.48%"
+qwen3-8b,R5,CME/2017/page_40.pdf-2,what is the anualized return for s&p 500 from 2012 to 2017?,"subtract(208.14, 100), divide(#0, 100), divide(const_1, const_5), exp(#1, #2), subtract(#3, const_1)",0.01577,7.35,cálculo,,"The table shows the S&P 500 value on December 31, 2012, is not provided, but the value on December 31, 2017, is $208.14. Assuming $100 was invested on December 31, 2012, the total return over 5 years is (208.14 - 100) / 100 = 1.0814, or 108.14%. The annualized return is calculated as (1 + 0.10814)^(1/5) - 1 = 0.0735 or 7.35%.
+Answer: 7.35%"
+qwen3-8b,R1,AMT/2006/page_104.pdf-3,"what was the percent of the outstanding notes under the ati 7.25% ( 7.25 % ) notes , for 2006 to 2005","divide(325.1, 400.0)",0.81275,-18.73,cálculo,,"The report states that as of December 31, 2006, the company had $325.1 million outstanding under the ATI 7.25% notes, and as of December 31, 2005, it had $400.0 million outstanding. To find the percent of the outstanding notes for 2006 to 2005, we calculate the change in outstanding notes from 2005 to 2006 and express it as a percentage of the 2005 amount. 
+
+Change in outstanding notes = $325.1 million - $400.0 million = -$74.9 million  
+Percent change = (-$74.9 million / $400.0 million) * 100 = -18.725%  
+
+Answer: -18.73%"
+qwen3-8b,R5,MRO/2013/page_19.pdf-1,what was total acres expiring in millions for other africa?,"table_sum(other africa, none)",2983.0,3.0,cálculo,,"The table shows the net undeveloped acres expiring in 2014, 2015, and 2016 for ""Other Africa"" as 189, 2605, and 189 (in thousands). To find the total acres expiring, we sum these values: 189 + 2605 + 189 = 3003 (in thousands). Converting to millions, we divide by 1000: 3003 / 1000 = 3.003 million. Rounded to two decimal places, the total is 3.00 million.
+
+Answer: 3.00"
+qwen3-8b,R0,CME/2010/page_69.pdf-1,what was the ratio of the increase in cash in 2009 due to the insurance of debt compared to the reduction of debt instruments,"divide(2.9, 900.1)",0.00322,3.22,cálculo,,"The report states that the increase in cash used in 2009 relative to 2008 was due to new issuances of debt of $2.9 billion in 2008 in conjunction with the merger with Nymex Holdings compared with net debt reductions of $900.1 million in debt instruments. The increase in cash used in 2009 is attributed to the new debt issuances, while the reduction in debt instruments is $900.1 million. The ratio is calculated as follows: $2.9 billion / $900.1 million = 3.22.  
+Answer: 3.22"
+qwen3-8b,R4,AMT/2008/page_107.pdf-1,as a result of the sales of certain non-core towers and other assets what was the percent of the change in the recorded net losses from 2007 to 2008,"subtract(10.5, 7.1), divide(#0, 7.1)",0.47887,37.18,extração,,"The net loss from asset sales and other impairments in 2007 was $7.8 million, and in 2008 it was $10.7 million. The change in the recorded net losses is $10.7 million - $7.8 million = $2.9 million. The percentage change is ($2.9 million / $7.8 million) * 100 = 37.18%.  
+Answer: 37.18%"
+qwen3-8b,R0,AON/2015/page_96.pdf-2,what was the average aggregate intrinsic value of stock options exercised from 2013 to 2015,"add(104, 61), add(73, #0), divide(#1, const_2), add(#2, const_3), divide(#3, const_2)",61.0,79.33,cálculo,,"To find the average aggregate intrinsic value of stock options exercised from 2013 to 2015, we need to calculate the average of the values for those three years. The values are $73 million (2013), $61 million (2014), and $104 million (2015). 
+
+First, sum the values: $73 + $61 + $104 = $238 million.  
+Next, divide by the number of years: $238 / 3 = $79.33 million.  
+
+Answer: 79.33"
+qwen3-8b,R5,JPM/2008/page_87.pdf-2,what is the minimum capital requirement as defined by the net capital rule in millions,"subtract(4.7, 3.3)",1.4,1400.0,cálculo,,"The report states that as of December 31, 2008, J.P. Morgan Clearing Corp. had net capital of $4.7 billion, which exceeded the minimum requirement by $3.3 billion. This implies that the minimum capital requirement is $4.7 billion minus $3.3 billion, which equals $1.4 billion. 
+
+Answer: 1400.00"
+qwen3-8b,R4,CMCSA/2008/page_36.pdf-3,what was the percent of the capital expenditures we incurred in our cable segment in 2006 for the customer premise equipment,"divide(3147, 5545)",0.56754,58.96,extração,,"To find the percentage of capital expenditures incurred in 2006 for customer premises equipment (CPE), we need to divide the CPE expenditures for 2006 by the total capital expenditures for 2006 and multiply by 100.
+
+- CPE expenditures for 2006: $2321 million
+- Total capital expenditures for 2006: $2321 (CPE) + $906 (scalable infrastructure) + $275 (line extensions) + $435 (support capital) = $3937 million
+
+Percentage = (2321 / 3937) * 100 = 58.96%
+
+Answer: 58.96%"
+qwen3-8b,R5,C/2018/page_176.pdf-2,what was the value of the shares granted,"multiply(12896599, 73.87)",952671768.13,951.54,cálculo,,"The table indicates that 12,896,599 shares were granted, and the weighted-average grant date fair value per share was $73.87. To find the total value of the shares granted, multiply the number of shares by the weighted-average fair value per share:  
+12,896,599 × 73.87 = 951,544,544.33  
+
+Answer: 951.54"
+qwen3-8b,R4,AMT/2016/page_49.pdf-2,"on february 17 , 2017 , what was the company's market capitalization as reported on the nyse.\\n\\n","multiply(427195037, 108.11)",46184055450.07,46213.64,cálculo,,"The report states that the closing price of the common stock on February 17, 2017, was $108.11 per share. It also states that there were 427,195,037 outstanding shares of common stock as of that date. To calculate the market capitalization, multiply the closing price per share by the number of outstanding shares:
+
+$108.11 × 427,195,037 = 46,213,644,444.67
+
+Answer: 46213.64"
+qwen3-8b,R4,SNA/2013/page_84.pdf-3,what percentage of trade and other accounts receivable are considered as doubtful receivables in 2013,"divide(14.9, 546.5)",0.02726,2.8,extração,,"To find the percentage of trade and other accounts receivable that are considered doubtful in 2013, we use the formula:
+
+$$
+\text{Percentage of doubtful receivables} = \left( \frac{\text{Allowances for doubtful accounts}}{\text{Total trade and other accounts receivable (net)}} \right) \times 100
+$$
+
+From the table:
+- Allowances for doubtful accounts in 2013 = $14.9 million
+- Total trade and other accounts receivable (net) in 2013 = $531.6 million
+
+$$
+\text{Percentage} = \left( \frac{14.9}{531.6} \right) \times 100 = 2.80\%
+$$
+
+Answer: 2.80%"
+qwen3-8b,R4,AES/2002/page_128.pdf-3,what percentage of total future minimum lease commitments is due in 2003?,"divide(30, 169)",0.17751,39.47,extração,,"To determine the percentage of total future minimum lease commitments due in 2003, we first sum the total future minimum lease commitments across all years and then calculate the percentage for 2003.
+
+Total future minimum lease commitments = $30 (2003) + $20 (2004) + $15 (2005) + $11 (2006) = $76 million  
+Percentage for 2003 = ($30 / $76) * 100 = 39.47%
+
+Answer: 39.47%"
+qwen3-8b,R2,IP/2006/page_38.pdf-4,in 2007 what was the percent of the total debt compared to lease obligations and purchase obligations as part of the contractual obligations for future payments,"divide(692, 3165)",0.21864,28.0,extração,,"To find the percentage of total debt compared to lease obligations and purchase obligations in 2007, we first sum the lease obligations and purchase obligations for 2007 from the table:
+
+- Lease obligations (2007): $144 million
+- Purchase obligations (2007): $2,329 million
+
+Total lease and purchase obligations for 2007 = $144 + $2,329 = $2,473 million
+
+Next, we take the total debt for 2007 from the table: $692 million
+
+Now, we calculate the percentage of total debt compared to lease and purchase obligations:
+
+$$
+\frac{692}{2473} \times 100 = 28.00\%
+$$
+
+Answer: 28.00%"
+qwen3-8b,R3,ETFC/2012/page_24.pdf-1,"as of december 2012 what is the percent of the square footage not leased to the total square footage in alpharetta , georgia","divide(165000, 254000)",0.64961,35.0,cálculo,,"The report states that in Alpharetta, Georgia, the total square footage is 254,000, and 165,000 square feet is owned by the company, while the rest is leased. Therefore, the leased square footage is 254,000 - 165,000 = 89,000. The percentage of square footage not leased is (89,000 / 254,000) * 100 = 35.00%.  
+Answer: 35.00%"
+qwen3-8b,R3,AMAT/2013/page_37.pdf-1,what is the total return if 100000 are invested in applied materials in 2008 and sold in 2011?,"divide(100000, const_100), subtract(118.21, const_100), multiply(#0, #1)",18210.0,18.21,extração,,"The value of Applied Materials on October 26, 2008, is $100.00, and on October 30, 2011, it is $118.21. The total return is calculated as follows:  
+(118.21 - 100.00) / 100.00 = 0.1821 = 18.21%  
+Answer: 18.21%"
+qwen3-8b,R2,AMT/2007/page_29.pdf-4,what portion of the woburn property is used by the american tower corporation?,"divide(57800, 163000)",0.3546,34.97,extração,,"The woburn property has a total size of 163,000 square feet. The report states that approximately 57,100 square feet is occupied by the lease administration office and the broadcast division. The remaining space is leased to unaffiliated tenants. Therefore, the portion of the woburn property used by the American Tower Corporation is 57,100 / 163,000 = 0.3497 or 34.97%.  
+Answer: 34.97%"
+qwen3-8b,R0,AMT/2008/page_94.pdf-2,"what will be the balance of aggregate carrying value of long-term debt as of december 31 , 2009?","subtract(4333146, 1837)",4331309.0,1837.0,extração,,"The table shows the aggregate carrying value of long-term debt for each year, including ""2009"" with a value of $1,837. This represents the balance as of December 31, 2009.  
+Answer: 1837.00"
+qwen3-8b,R0,PNC/2012/page_65.pdf-4,"what would the fair value of total securities available for sale be without the fair value of securities classified as corporate stocks as of december 31 , 2012?","subtract(61912, 367)",61545.0,51051.63,extração,,"The total fair value of securities available for sale as of December 31, 2012, is $51,052 million. The report states that $367 million of both amortized cost and fair value of securities classified as corporate stocks and other are included in the total. Therefore, to find the fair value of total securities available for sale without the fair value of securities classified as corporate stocks, we subtract $367 million from $51,052 million.
+
+$51,052 - 0.367 = 51,051.633
+
+Answer: 51051.63"
+qwen3-8b,R2,ETR/2004/page_239.pdf-4,what is the increase in operation and maintenance expenses as a percentage of net revenue in 2003?,"add(6.6, 3.7), divide(#0, 426.6)",0.02414,1.66,extração,,"To calculate the increase in operation and maintenance expenses as a percentage of net revenue in 2003, we need to determine the increase in operation and maintenance expenses and divide it by the net revenue for 2003.
+
+From the report, the increase in operation and maintenance expenses in 2003 compared to 2002 is $7.1 million (voluntary severance program accruals). The net revenue for 2003 is $426.6 million.
+
+Percentage increase = (Increase in operation and maintenance expenses / Net revenue in 2003) × 100  
+Percentage increase = ($7.1 million / $426.6 million) × 100 ≈ 1.66%
+
+Answer: 1.66%"
+qwen3-8b,R0,CME/2010/page_69.pdf-3,what is the annual interest expense on the fixed rate notes due march 2018 after the hedge transaction?,"multiply(612.5, const_1000000), multiply(#0, 4.72%)",28910000.0,27.31,extração,,"The fixed rate notes due March 2018 have an interest rate of 4.40%. The report mentions that in March 2010, a forward-starting interest rate swap agreement was entered into, which modified the interest obligation so that the interest payable effectively became fixed at a rate of 4.46%. Therefore, the annual interest expense is based on the effective fixed rate of 4.46%. The par value of the notes is $612.5 million. 
+
+Annual interest expense = 4.46% × $612.5 million = 0.0446 × 612.5 = 27.3125 million.
+
+Answer: 27.31"
+qwen3-8b,R5,VRTX/2006/page_111.pdf-2,what percent of the gross total property and equipment values in 2006 are related to computers?,"divide(19733, 61535)",0.32068,9.24,extração,,"The gross total property and equipment value in 2006 is $213,520. The value related to computers is $19,733. To find the percentage, divide the value of computers by the total gross property and equipment value and multiply by 100: $19,733 / $213,520 = 0.0924 = 9.24%.  
+Answer: 9.24%"
+qwen3-8b,R2,FIS/2012/page_48.pdf-4,what is the unfavorable impact in the operating expense in 2012 resulting from a stronger u.s . dollar?,"subtract(100.8, 9.0)",91.8,9.0,extração,,"The report states that the unfavorable foreign currency impact during 2012 resulted in $9.0 million of unfavorable impact on operating income. This is the amount directly related to the stronger U.S. dollar. 
+
+Answer: 9.00"
+qwen3-8b,R3,ETR/2004/page_239.pdf-4,what is the increase in operation and maintenance expenses as a percentage of net revenue in 2003?,"add(6.6, 3.7), divide(#0, 426.6)",0.02414,2.53,extração,,"To calculate the increase in operation and maintenance expenses as a percentage of net revenue in 2003, we need to identify the increase in operation and maintenance expenses and the net revenue for 2003.
+
+From the report:
+- The increase in operation and maintenance expenses in 2003 is $10.8 million (sum of $6.6 million in customer service support costs and $4.4 million in benefit costs).
+- The net revenue for 2003 is $426.6 million.
+
+Now, calculate the percentage:
+$$
+\frac{10.8}{426.6} = 0.02531 \approx 2.53\%
+$$
+
+Answer: 2.53%"
+qwen3-8b,R1,AAPL/2006/page_131.pdf-2,"counting indirect shares , how many shares would arthur d . levinson own in total?","add(362400, 2000)",364400.0,382400.0,extração,,"Arthur D. Levinson directly owns 362,400 shares. Additionally, he holds 20,000 shares indirectly. Adding these together: 362,400 + 20,000 = 382,400 shares.  
+Answer: 382400.00"
+qwen3-8b,R4,SNA/2012/page_110.pdf-3,"what is the total fair value of the non-vested performance awards at beginning of year , ( in thousands ) ?","subtract(707, 48.87)",658.13,34520.69,cálculo,,"The total fair value of the non-vested performance awards at the beginning of the year is calculated by multiplying the number of shares (in thousands) by the fair value per share. 
+
+The number of shares at the beginning of the year is 707 (in thousands), and the fair value per share is $48.87. 
+
+707 * 48.87 = 34520.69
+
+Answer: 34520.69"
+qwen3-8b,R2,FIS/2006/page_31.pdf-1,what portion of the total leased locations are in texas?,"add(63, 81), divide(19, #0)",0.13194,0.098,extração,,"To determine the portion of the total leased locations in Texas, we first need to find the total number of leased locations and the number of locations in Texas.
+
+From the table:
+- Number of locations in Texas = 19
+- Total number of locations = 57 (California) + 26 (Florida) + 22 (Georgia) + 19 (Texas) + 9 (Minnesota New York) + 8 (Illinois Ohio Maryland) + 7 (Pennsylvania) + 63 (Other) = 194
+
+Now, calculate the portion of locations in Texas:
+- 19 / 194 = 0.098
+
+Answer: 0.098"
+qwen3-8b,R2,ETR/2016/page_23.pdf-3,what would 2015 net revenue have been in millions assuming there was no impact from both the retail electric price change and the impact of volume/weather in the year?,"add(187, 95), add(5829, #0)",6111.0,5547.0,cálculo,,"To find 2015 net revenue without the impact of the retail electric price change and volume/weather, we need to subtract these two components from the total 2015 net revenue. 
+
+- 2015 net revenue: $5,829 million
+- Retail electric price change: $187 million
+- Volume/weather: $95 million
+
+Subtracting these: $5,829 - $187 - $95 = $5,547
+
+Answer: 5547.00"
+qwen3-8b,R0,MRO/2013/page_19.pdf-3,"what was average worldwide net acreage expiring in the total three year period , in millions?","table_sum(worldwide, none)",3879.0,1.29,cálculo,,"To find the average worldwide net acreage expiring over the three-year period, we first sum the net undeveloped acres expiring in 2014, 2015, and 2016, then divide by 3.
+
+- Net undeveloped acres expiring in 2014: 586 (in thousands)
+- Net undeveloped acres expiring in 2015: 3057 (in thousands)
+- Net undeveloped acres expiring in 2016: 236 (in thousands)
+
+Total net undeveloped acres expiring over the three years:  
+586 + 3057 + 236 = 3879 (in thousands)
+
+Average worldwide net acreage expiring:  
+3879 / 3 = 1293 (in thousands)
+
+Convert to millions:  
+1293 / 1000 = 1.293
+
+Answer: 1.29"
+qwen3-8b,R3,AWK/2014/page_121.pdf-3,"by how much did company 2019s gross liability , excluding interest and penalties , for unrecognized tax benefits increase from 2014 to 2014?","subtract(195237, 177947), divide(#0, 177947)",0.09716,0.0,extração,,"The question asks for the change in the company's gross liability, excluding interest and penalties, for unrecognized tax benefits from 2014 to 2014, which is essentially asking for the change within the same year. Since there is no change within the same year, the increase is $0.  
+
+Answer: 0.00"
+qwen3-8b,R4,CDW/2015/page_93.pdf-2,"how much more money was expensed per outstanding basic weighted-average share in the year ended dec 31 , 2013 compared to the year ended dec 31 , 2014?","divide(156.6, 17.3), divide(170.6, 21.9), subtract(#0, #1)",1.26207,0.02,cálculo,,"To determine how much more money was expensed per outstanding basic weighted-average share in the year ended December 31, 2013 compared to the year ended December 31, 2014, we need to calculate the expense per share for each year and find the difference.
+
+1. **Expense for 2013**: The amount expensed for the coworker retirement and other compensation benefits in 2013 was $17.3 million. The basic weighted-average shares outstanding in 2013 were 156.6 million.
+   $$
+   \text{Expense per share for 2013} = \frac{17.3}{156.6} \approx 0.1105
+   $$
+
+2. **Expense for 2014**: The amount expensed for the coworker retirement and other compensation benefits in 2014 was $21.9 million. The basic weighted-average shares outstanding in 2014 were 170.6 million.
+   $$
+   \text{Expense per share for 2014} = \frac{21.9}{170.6} \approx 0.1284
+   $$
+
+3. **Difference in expense per share**:
+   $$
+   \text{Difference} = 0.1284 - 0.1105 = 0.0179
+   $$
+
+Answer: 0.02"
+qwen3-8b,R4,MMM/2013/page_75.pdf-2,what was the percentage change in the domestic manufacturer 2019s deduction activity from 2012 to 2013,"subtract(1.6, 1.2), divide(#0, 1.2)",0.33333,-56.25,extração,,"The domestic manufacturer 2019s deduction was -1.6% in 2012 and -0.7% in 2013. The percentage change is calculated as ((-0.7 - (-1.6)) / -1.6) * 100 = (0.9 / -1.6) * 100 = -56.25%.  
+Answer: -56.25%"
+qwen3-8b,R4,MSI/2014/page_76.pdf-3,what was the percentage change in the weighted-average estimated fair value of employee stock options granted during from 2013 to 2014,"divide(11.02, 9.52), divide(#0, 9.52)",0.12159,15.76,cálculo,,"The weighted-average estimated fair value of employee stock options granted in 2013 was $9.52, and in 2014 it was $11.02. The percentage change is calculated as follows: (11.02 - 9.52) / 9.52 = 1.5 / 9.52 = 0.15756 = 15.76%.  
+Answer: 15.76%"
+qwen3-8b,R5,SLG/2011/page_91.pdf-2,what was the percent of the change in the compensation expense in connection with connection with the 2005 outperformance plan.during from 2009 to 2010,"subtract(1.6, 2.3), divide(#0, 2.3)",-0.30435,30.43,cálculo,,"The compensation expense for the 2005 outperformance plan in 2009 was $2.3 million, and in 2010 it was $1.6 million. The change in compensation expense is $2.3 million - $1.6 million = $0.7 million. The percent change is ($0.7 million / $2.3 million) * 100 = 30.43%.  
+Answer: 30.43%"
+qwen3-8b,R4,AMT/2006/page_104.pdf-3,"what was the percent of the outstanding notes under the ati 7.25% ( 7.25 % ) notes , for 2006 to 2005","divide(325.1, 400.0)",0.81275,-18.73,cálculo,,"The report states that as of December 31, 2006, the company had $325.1 million outstanding under the ATI 7.25% notes, and as of December 31, 2005, it had $400.0 million outstanding. To find the percentage of the outstanding notes for 2006 to 2005, we calculate the change in outstanding notes from 2005 to 2006 and express it as a percentage of the 2005 amount.
+
+Change in outstanding notes = $325.1 million - $400.0 million = -$74.9 million  
+Percentage change = (-$74.9 million / $400.0 million) * 100 = -18.725%
+
+Answer: -18.73%"
+qwen3-8b,R4,AAL/2013/page_18.pdf-3,what is the percentage effect of the hedges on the anticipated increase in the 2014 increase in fuel expenses,"subtract(104, 87), divide(#0, 87)",0.1954,16.35,cálculo,,"The report states that a $1 per barrel increase in the price of crude oil would increase 2014 annual fuel expense by $104 million excluding hedges and by $87 million with hedges. The percentage effect of the hedges is calculated as (104 - 87) / 104 = 17 / 104 = 0.1635 or 16.35%. 
+
+Answer: 16.35%"
+qwen3-8b,R0,SNA/2007/page_49.pdf-3,what is the average repurchase price per share paid during 2006?,"subtract(109.8, const_1000000), divide(#0, 2616618)",-0.38213,41.98,cálculo,,"To find the average repurchase price per share paid during 2006, we use the total amount spent on repurchases and divide it by the number of shares repurchased. 
+
+The report states that in 2006, Snap-on repurchased 2,616,618 shares of common stock for $109.8 million. 
+
+$$
+\text{Average repurchase price per share} = \frac{\$109.8 \text{ million}}{2,616,618 \text{ shares}} = \frac{109,800,000}{2,616,618} \approx 41.98
+$$
+
+Answer: 41.98"
+qwen3-8b,R5,ETR/2016/page_23.pdf-3,what would 2015 net revenue have been in millions assuming there was no impact from both the retail electric price change and the impact of volume/weather in the year?,"add(187, 95), add(5829, #0)",6111.0,5547.0,cálculo,,"To calculate 2015 net revenue without the impact of retail electric price change and volume/weather, we subtract these two items from the total 2015 net revenue. 
+
+- 2015 net revenue: $5,829 million
+- Retail electric price: $187 million
+- Volume/weather: $95 million
+
+$5,829 - $187 - $95 = $5,547
+
+Answer: 5547.00"
+qwen3-8b,R1,AMT/2012/page_118.pdf-4,for the vivo acquisition how many of the allowed towers were actually purchased under the final amended purchase agreement?,"add(800, 700), add(#0, 192), add(#0, 300), divide(#1, #2)",0.94,192.0,extração,,"The report states that the company purchased 800 communications sites on March 30, 2012, and 700 communications sites on June 30, 2012, for a total of 1,500 communications sites. Additionally, the company purchased an additional 192 communications sites on August 31, 2012, under the amended agreement. The total number of towers actually purchased under the final amended purchase agreement is 192.  
+Answer: 192.00"
+qwen3-8b,R1,CME/2010/page_69.pdf-3,what is the annual interest expense on the fixed rate notes due march 2018 after the hedge transaction?,"multiply(612.5, const_1000000), multiply(#0, 4.72%)",28910000.0,27.31,extração,,"The fixed rate notes due March 2018 have an interest rate of 4.40%. The hedge transaction, which was a forward-starting interest rate swap agreement, modified the interest obligation so that the interest payable effectively became fixed at a rate of 4.46%. Therefore, the annual interest expense on these notes after the hedge transaction is based on the effective fixed rate of 4.46%. The par value of these notes is $612.5 million. 
+
+Annual interest expense = 4.46% × $612.5 million = 0.0446 × 612.5 = 27.3125 million.
+
+Answer: 27.31"
+qwen3-8b,R3,DRE/2005/page_30.pdf-2,what was the total gain on sales in 2004 before any adjustment for impairments in millions,"add(424, 10202)",10626.0,10.63,extração,,"The total gain on sales in 2004 before any adjustment for impairments is the sum of the gain on land sales and the gain on sale of ownership interests in unconsolidated companies. 
+
+The gain on land sales in 2004 is $10,543, and the gain on sale of ownership interests in unconsolidated companies in 2004 is $83. 
+
+Adding these together: $10,543 + $83 = $10,626.
+
+Answer: 10.63"
+qwen3-8b,R2,CE/2016/page_19.pdf-4,what was the percentage change in the the research and development costs from 2014 to 2015,"subtract(119, 86), add(#0, 86), divide(#1, const_2)",59.5,38.37,cálculo,,"The research and development costs in 2014 were $86 million, and in 2015 they were $119 million. The percentage change is calculated as ((119 - 86) / 86) * 100 = (33 / 86) * 100 = 38.37%
+Answer: 38.37%"
+qwen3-8b,R2,FIS/2017/page_64.pdf-1,what is the percentage change in revenue generated from non-us currencies from 2016 to 2017?,"subtract(1830, 1909), divide(#0, 1909)",-0.04138,0.78,extração,,"To find the percentage change in revenue generated from non-U.S. currencies from 2016 to 2017, we use the total increase or decrease in revenues for those years. The total revenue for 2016 is $129 million, and for 2017 it is $130 million. The percentage change is calculated as follows:
+
+$$
+\text{Percentage Change} = \frac{\text{New Value} - \text{Old Value}}{\text{Old Value}} \times 100 = \frac{130 - 129}{129} \times 100 = \frac{1}{129} \times 100 \approx 0.7752\%
+$$
+
+Answer: 0.78%"
+qwen3-8b,R5,IP/2006/page_38.pdf-4,in 2007 what was the percent of the total debt compared to lease obligations and purchase obligations as part of the contractual obligations for future payments,"divide(692, 3165)",0.21864,51.74,extração,,"To find the percent of total debt compared to lease obligations and purchase obligations in 2007, we first sum the lease obligations and purchase obligations for 2007 from the table. Lease obligations for 2007 are $23 million, and purchase obligations for 2007 are $335 million. The total of these is $23 million + $335 million = $358 million. The total debt for 2007 is $692 million. The percentage is calculated as ($358 million / $692 million) * 100 = 51.74%.  
+Answer: 51.74%"
+qwen3-8b,R3,HWM/2015/page_173.pdf-2,what was the increase in the settlements with tax authorities as a percent of the tax liabilities observed during 2013 and 2014?,"add(29, 4), add(8, 2), divide(29, #0), divide(8, #1), subtract(#2, #3)",0.07879,20.19,cálculo,,"To find the increase in the settlements with tax authorities as a percent of the tax liabilities observed during 2013 and 2014, we need to:
+
+1. Identify the settlements with tax authorities for 2013 and 2014:  
+   - 2013: $8  
+   - 2014: $29  
+
+2. Calculate the total tax liabilities for 2013 and 2014:  
+   - 2013: $63 (balance at beginning of year) + $11 (additions for tax positions of prior years) - $2 (reductions for tax positions of prior years) - $8 (settlements with tax authorities) - $2 (expiration of the statute of limitations) - $4 (foreign currency translation) = $63 + $11 - $2 - $8 - $2 - $4 = $58  
+   - 2014: $66 (balance at beginning of year) + $2 (additions for tax positions of current year) + $5 (additions for tax positions of prior years) - $4 (reductions for tax positions of prior years) - $29 (settlements with tax authorities) - $2 (expiration of the statute of limitations) - $2 (foreign currency translation) = $66 + $2 + $5 - $4 - $29 - $2 - $2 = $46  
+
+3. Calculate the increase in settlements with tax authorities:  
+   - Increase = $29 (2014) - $8 (2013) = $21  
+
+4. Calculate the percentage of the tax liabilities observed during 2013 and 2014:  
+   - Total tax liabilities = $58 (2013) + $46 (2014) = $104  
+   - Percentage = $21 / $104 = 0.2019 = 20.19%  
+
+Answer: 20.19%"
+qwen3-8b,R1,AMT/2016/page_125.pdf-1,what is the net change in the balance of unrecognized tax benefits during 2016?,"subtract(107551, 28114)",79437.0,79.44,cálculo,,"To calculate the net change in the balance of unrecognized tax benefits during 2016, we compare the balance at the beginning of the year (January 1, 2016) to the balance at the end of the year (December 31, 2016).
+
+- Balance at January 1, 2016: $28,114 (in thousands)
+- Balance at December 31, 2016: $107,551 (in thousands)
+
+Net change = Balance at December 31, 2016 - Balance at January 1, 2016  
+Net change = $107,551 - $28,114 = $79,437 (in thousands)
+
+Answer: 79.44"
+qwen3-8b,R5,AMT/2012/page_118.pdf-2,"pursuant to the agreement , on march 30 , 2012 , what was the approximate price for each site the company purchased in thousands","divide(151.7, 800)",0.18962,189.63,cálculo,,"On March 30, 2012, the company purchased 800 communications sites for an aggregate purchase price of $151.7 million. To find the approximate price per site, divide the total purchase price by the number of sites: $151,700,000 / 800 = $189,625. 
+
+Answer: 189.63"
+qwen3-8b,R5,ILMN/2003/page_58.pdf-3,what was the difference in cumulative total stockholder return percentage for illumina inc . common stock versus the nasdaq pharmaceutical index for the four years end 2003?,"subtract(43.81, const_100), divide(#0, const_100), subtract(74.57, const_100), divide(#2, const_100), subtract(#0, #2)",-30.76,30.76,cálculo,,"The value of Illumina Inc. common stock on July 27, 2000, was 100.00, and on December 26, 2003, it was 43.81. The value of the NASDAQ Pharmaceutical Index on July 27, 2000, was 100.00, and on December 26, 2003, it was 74.57. The cumulative total return for Illumina Inc. is (43.81 - 100.00) / 100.00 = -0.5619 = -56.19%. The cumulative total return for the NASDAQ Pharmaceutical Index is (74.57 - 100.00) / 100.00 = -0.2543 = -25.43%. The difference in cumulative total return is -56.19% - (-25.43%) = -30.76%. The absolute difference is 30.76%. 
+
+Answer: 30.76%"
+qwen3-8b,R3,MRO/2013/page_19.pdf-2,by how much did net undeveloped acres expiring decrease from 2015 to 2016?,"subtract(236, 3057), divide(#0, 3057)",-0.9228,2821.0,cálculo,,"The net undeveloped acres expiring in 2015 is 3057 (in thousands), and in 2016 it is 236 (in thousands). The decrease is 3057 - 236 = 2821.  
+Answer: 2821.00"
+qwen3-8b,R1,CME/2017/page_89.pdf-3,"based on the effective tax rate , what is the gross amount of the recognized tax benefit the year ended december 31 , 2017 in billions??","divide(2.6, 35%)",7.42857,2.6,extração,,"The report states that the company recognized a net tax benefit of $2.6 billion for the year ended December 31, 2017. This directly answers the question about the gross amount of the recognized tax benefit.
+
+Answer: 2.60"

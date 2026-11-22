@@ -1,0 +1,24 @@
+{
+  "id": "20261122T172248_qwen3-8b",
+  "gpu": "NVIDIA A100-SXM4-40GB",
+  "gpu_gb": 42.4,
+  "precision": "bf16",
+  "batch_size": 4,
+  "python": "3.13.16",
+  "torch": "2.14.1+cu130",
+  "transformers": "5.22.1",
+  "git_sha": "822077a30eba2ffc9dfeef6015eedbf394ef6f2e",
+  "git_dirty": false,
+  "prompt_hash": "bd940bbf875bc8e1",
+  "models": [
+    "qwen3-8b"
+  ],
+  "reps": [
+    "raw",
+    "markdown",
+    "json",
+    "linearized",
+    "selective",
+    "gold"
+  ]
+}

@@ -11,6 +11,11 @@ __pycache__/
 .venv/
 .env
 
-# Resultados baixados do Drive (ficam fora do repositório)
+# Resultados: as respostas brutas ficam no Drive. São versionados só as tabelas e figuras
+# da análise (results/analise/) e o registro das sessões de geração (results/test/sessions/).
 NLP - Checkpoints*.zip
-results/
+results/*
+!results/analise/
+!results/test/
+results/test/*
+!results/test/sessions/

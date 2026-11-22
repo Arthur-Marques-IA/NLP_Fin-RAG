@@ -1,6 +1,8 @@
 # Roteiro de execução no Colab
 
-Este roteiro é para quem vai rodar o congelamento e a inferência final no Google Colab. Ele diz o que falta fazer, qual ambiente escolher, o que executar e o que fazer se a sessão cair. O desenho do estudo está em [METODOLOGIA.md](METODOLOGIA.md).
+Este roteiro é para quem vai rodar o congelamento e a inferência final no Google Colab. Ele diz qual ambiente escolher, o que executar e o que fazer se a sessão cair. O desenho do estudo está em [METODOLOGIA.md](METODOLOGIA.md).
+
+**Estado em 22/11/2026:** o congelamento, o teste e a análise foram concluídos, e os resultados estão em [RESULTADOS.md](RESULTADOS.md). Este roteiro fica como registro de como a execução foi feita e de como repeti-la.
 
 **Em resumo, para quem só vai executar:**
 
@@ -11,16 +13,16 @@ Não é preciso token do Hugging Face: os dois modelos do estudo são abertos.
 
 Pode parar e continuar quando quiser: os resultados são gravados na pasta do Drive a cada 4 perguntas e, ao rodar de novo, o notebook lê o que já existe lá e segue do ponto em que parou. Cada condição mostra uma barra de progresso com perguntas feitas, ritmo, tempo restante e quantas já estão gravadas.
 
-## 1. O que falta executar
+## 1. Etapas e estado
 
 Modelos do estudo: **Qwen3-8B** e **Phi-4-mini-instruct**. O Llama 3.1 8B passou no piloto, mas ficou fora por tempo de GPU.
 
 | Etapa | Notebook | Gerações | Ambiente | Estado |
 |---|---|---|---|---|
 | Piloto no dev | `02_prompt_piloto.ipynb` | 300 por modelo | — | **feito** (bf16, GPU L4) |
-| Congelamento | `02_prompt_piloto.ipynb` | nenhuma | CPU | **falta** (seção 2) |
-| Inferência no teste | `03_inferencia_teste.ipynb` | 6.882 por modelo (13.764 no total) | GPU com 22 GB ou mais | **falta** (seção 4) |
-| Análise | `04_analise.ipynb` | nenhuma | CPU | falta |
+| Congelamento | `02_prompt_piloto.ipynb` | nenhuma | CPU | **feito** (seção 2) |
+| Inferência no teste | `03_inferencia_teste.ipynb` | 6.882 por modelo (13.764 no total) | GPU com 22 GB ou mais | **feito** em GPU A100, cerca de 5 h por modelo (seção 4) |
+| Análise | `04_analise.ipynb` | nenhuma | CPU | **feita** ([RESULTADOS.md](RESULTADOS.md)) |
 
 Cada geração tem de 2.300 a 5.700 tokens de entrada e até 512 de saída (cerca de 130, em média).
 
@@ -66,7 +68,7 @@ Medido no piloto, em uma L4 com bf16 e lote de 4:
 | 1 | Qwen3-8B | 8 a 9 s | cerca de 16 h |
 | 2 | Phi-4-mini | cerca de 6 s | cerca de 12 h |
 
-Total: perto de 28 h de L4. Na A100 e na G4 o tempo não foi medido; em alguns pilotos os dois modelos rodaram a 2,4 s por pergunta, provavelmente em uma GPU mais rápida, mas a GPU dessas sessões não ficou registrada. A seção 7 do notebook 02 mostra a projeção.
+Total: perto de 28 h de L4. Na A100, medido no teste: de 2,2 a 2,9 s por pergunta, cerca de 5 h por modelo para as seis condições. Na G4 o tempo não foi medido. A seção 7 do notebook 02 mostra a projeção.
 
 O teste pode ser dividido em quantas sessões forem necessárias, e os dois modelos podem rodar ao mesmo tempo em duas sessões ou contas diferentes.
 

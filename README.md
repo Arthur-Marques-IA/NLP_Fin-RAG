@@ -22,6 +22,25 @@ Em perguntas numéricas sobre relatórios financeiros, como a representação da
 | Custo | tokens de entrada pelo tokenizador de cada modelo; acurácia por mil tokens |
 | Cortes | nº de passos do programa (1, 2, 3+), origem da evidência (tabela/texto/ambos), tamanho da tabela |
 
+## Resultados
+
+O teste rodou em 22/11/2026 (13.764 gerações). A resposta completa, com tabelas, intervalos e ressalvas, está em **[docs/RESULTADOS.md](docs/RESULTADOS.md)**.
+
+| Hipótese | Veredito | Evidência principal |
+|---|---|---|
+| H1 | apoiada em parte | Nenhum formato supera o Markdown; os efeitos vão de 0 a 3,6 pontos, e dois dos seis contrastes são significativos após Holm (bruta no Phi-4-mini, linearizada no Qwen3-8B) |
+| H2 | apoiada | A seleção não muda a acurácia de forma detectável quando preserva as linhas do gabarito, e perde de 43 a 50 pontos quando corta alguma. No conjunto, perde 10,7 e 15,6 pontos e economiza cerca de 5% dos tokens de entrada |
+| H3 | não apoiada | As diferenças são menores nas perguntas de 2 ou mais passos, o contrário do previsto |
+
+Acerto estrito no teste, em %:
+
+| Modelo | R0 Bruta | R1 Markdown | R2 JSON | R3 Linearizada | R4 Seletiva | R5 Gabarito |
+|---|---|---|---|---|---|---|
+| Phi-4-mini | 58,2 | 61,7 | 61,8 | 60,1 | 58,4 | 64,0 |
+| Qwen3-8B | 68,7 | 70,7 | 68,4 | 67,7 | 64,3 | 71,3 |
+
+JSON e linearizada custam de 19% a 25% mais tokens de entrada que o Markdown, sem ganho de acurácia.
+
 ## Estrutura
 
 A metodologia completa — representações comparadas, controles, métricas, estatística e verificações — está em **[docs/METODOLOGIA.md](docs/METODOLOGIA.md)**, que é a referência do projeto.
@@ -29,6 +48,7 @@ A metodologia completa — representações comparadas, controles, métricas, es
 ```
 docs/
   METODOLOGIA.md                  # como o estudo é conduzido (referência)
+  RESULTADOS.md                   # resultados do teste e resposta às hipóteses
   EXECUCAO_COLAB.md               # roteiro para rodar o piloto e o teste no Colab (ambiente, passos, retomada)
 notebooks/
   01_dados_representacoes.ipynb   # dados, metadados, serializações, avaliação e tokens do contexto
@@ -37,6 +57,9 @@ notebooks/
   04_analise.ipynb                # contrastes, cortes, tipo de erro, custo × acurácia, figuras
 src/
   finrag.py                       # código compartilhado pelos notebooks 02–04
+results/
+  analise/                        # tabelas (CSV) e figuras geradas pelo notebook 04 com os resultados do teste
+  test/sessions/                  # registro de cada sessão de geração (GPU, versões, commit)
 tests/
   test_consistencia.py            # confere que src/finrag.py e o notebook 01 dão as mesmas saídas
   test_retomada.py                # simula quedas de sessão e confere que a retomada não muda os resultados
@@ -51,6 +74,8 @@ Related_Work_RAG_Tabular_QA_Financeiro.pdf                  # revisão da litera
 | 03 | sim | `frozen_config.json` | `test/<modelo>__<representação>.jsonl` |
 | 04 | não | `test/*.jsonl` | `analise/*.csv` e `analise/fig*.png` |
 
+As tabelas e figuras da análise estão versionadas em `results/analise/`. As respostas brutas do teste (`test/*.jsonl`, cerca de 13 MB) ficam na pasta de resultados do Drive e não estão no repositório; sem elas, o notebook 04 não roda a partir de um clone.
+
 No Colab, a pasta de resultados é `NLP - Checkpoints/results` no Google Drive (o nome da pasta está em `DRIVE_FOLDER`, em `src/finrag.py`, e pode ser trocado pela variável de ambiente `FINRAG_DRIVE_FOLDER`); fora dele, `results/` na raiz do repositório (ou a pasta indicada em `FINRAG_RESULTS_DIR`).
 
 **Se a sessão do Colab cair:** abra o mesmo notebook e rode tudo de novo. Os resultados são gravados no Drive a cada lote de 4 perguntas; o que já existe é pulado e a geração continua do ponto em que parou.
@@ -58,7 +83,7 @@ No Colab, a pasta de resultados é `NLP - Checkpoints/results` no Google Drive (
 ## Primeiros resultados (notebook 01)
 
 - **Composição do teste:** 654 perguntas de 1 passo e 493 de 2+ (84 com 3+); evidência em tabela (706), texto (283) ou ambos (158).
-- **k da seletiva escolhido no dev:** k = 4 (preserva todas as linhas do gabarito em 84,2% do dev). No teste, R4 coincide com R1 em 43% das perguntas; o subconjunto efetivo da H2 tem 488 perguntas (348 com seleção que preserva o gabarito, 140 que corta).
+- **k da seletiva escolhido no dev:** k = 4 (preserva todas as linhas do gabarito em 84,2% do dev). No teste, a tabela de R4 coincide com a de R1 em 43% das perguntas; o subconjunto efetivo da H2 tem 488 perguntas (348 com seleção que preserva o gabarito, 140 que corta).
 - **Avaliação:** acurácia estrita (≤ 1%) e tolerante (arredondamento, teto de 5%); aplicada ao campo `answer` dos anotadores, aceita 82,3% e 90,0% — os anotadores arredondam muito, por isso o prompt pede 2 casas decimais.
 - **Verificações:** conteúdo igual em R0–R3, R3 = template do FinQA (99,7%), R4/R5 no formato de R1, seleção sem vazamento e texto fixo — todas passam no dev e no teste.
 - **Custo (contexto, relativo a R1):** R0 0,96×, R2 1,13×, R3 1,18×, R4 0,95× (0,90× no subconjunto efetivo), R5 0,88×. A tabela é uma fração pequena do contexto, então a economia da seleção é modesta.
@@ -104,7 +129,6 @@ Instalar como ferramenta (em vez de `uvx git+...`) evita o timeout de 30 s na in
 
 ## Estado e próximos passos
 
-- **Piloto feito** (dev, bf16, GPU L4, prompt `bd940bbf`): os dois modelos passam na V7. Em R1, 150 perguntas: Qwen3-8B com 94,7% de saídas com resposta legível e 70,0% de acerto estrito; Phi-4-mini com 96,0% e 63,3%. Não é resultado do estudo: é a checagem do prompt.
-- **Falta congelar** com esse piloto (notebook 02, sem GPU; passos em [docs/EXECUCAO_COLAB.md](docs/EXECUCAO_COLAB.md)).
-- **Falta rodar o teste** (notebook 03): 6.882 gerações por modelo, primeiro o Qwen3-8B e depois o Phi-4-mini, com retomada pelo Drive (cerca de 28 h de GPU L4).
-- **Falta a análise** (notebook 04, testado só com resultados sintéticos) e a conferência manual da amostra de 50 erros por modelo.
+- **Piloto, congelamento, teste e análise: feitos.** O teste rodou em 22/11/2026 em GPU A100, uma sessão por modelo, sem queda. Os resultados estão em [docs/RESULTADOS.md](docs/RESULTADOS.md).
+- **Falta a conferência manual, por uma pessoa, da amostra de 50 erros por modelo** (`results/analise/amostra_erros_para_conferir.csv`). Há uma checagem do assistente, mais fraca, descrita na seção 8.2 dos resultados.
+- **Fora do escopo desta rodada:** repetir as condições para medir o ruído entre execuções, e testar um seletor de linhas melhor que o lexical.

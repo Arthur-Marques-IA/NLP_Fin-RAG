@@ -2,6 +2,8 @@
 
 Este documento é a referência de **como o estudo será conduzido**. Ele fixa o que comparamos, o que mantemos constante, como medimos e como decidimos se uma diferença é real. Toda escolha de implementação no notebook deve seguir este texto; quando o código e este documento divergirem, o documento vale e o código deve ser corrigido.
 
+**Os resultados do teste estão em [RESULTADOS.md](RESULTADOS.md).** Este documento foi escrito antes deles. O que foi acrescentado depois está marcado como tal, nas seções 6.4, 7.1, 9, 10 e 12.
+
 ---
 
 ## 1. Pergunta e hipóteses
@@ -361,6 +363,8 @@ Detalhes da implementação (`error_type` em `src/finrag.py`):
 
 É uma heurística automática; uma amostra de 50 erros por modelo é conferida à mão para estimar sua precisão (o notebook 04 grava a amostra em `amostra_erros_para_conferir.csv`).
 
+**Estado, depois do teste:** a conferência por uma pessoa não foi feita. No lugar dela há uma checagem do assistente, mais fraca, descrita na seção 8.2 de [RESULTADOS.md](RESULTADOS.md); os percentuais de extração e cálculo devem ser lidos como saída de uma heurística.
+
 ---
 
 ## 7. Análise
@@ -379,7 +383,7 @@ Todos são **pareados** (mesmas perguntas, mesmo modelo) e têm R1 (Markdown com
 
 São 5 contrastes × 2 modelos = 10 testes.
 
-**Por que o subconjunto efetivo para H2:** com *k* = 4, R4 é idêntica a R1 em 493 perguntas (43%, tabelas com até 4 linhas de dados), e em perguntas sem linhas no gabarito não há o que preservar. Incluí-las diluiria o efeito da seleção. O **subconjunto efetivo tem 488 perguntas**: tabela com mais de 4 linhas de dados e com linhas no gabarito. Também se reporta R4 − R1 em todas as perguntas, como efeito prático.
+**Por que o subconjunto efetivo para H2:** com *k* = 4, a tabela da pergunta em R4 é idêntica à de R1 em 493 perguntas (43%, tabelas com até 4 linhas de dados; o prompt inteiro nunca é idêntico, porque dois dos três exemplos também aparecem com linhas selecionadas, como prevê a seção 3.1), e em perguntas sem linhas no gabarito não há o que preservar. Incluí-las diluiria o efeito da seleção. O **subconjunto efetivo tem 488 perguntas**: tabela com mais de 4 linhas de dados e com linhas no gabarito. Também se reporta R4 − R1 em todas as perguntas, como efeito prático.
 
 **H2 em duas partes:** dentro do subconjunto efetivo, R4 − R1 é estimado separadamente onde a seleção **preservou** todas as linhas do gabarito (348 perguntas, 71,3%) e onde **cortou** alguma (140). H2 prevê ≈ 0 no primeiro grupo e < 0 no segundo. Essa divisão depende da pergunta (perguntas com vocabulário parecido com a tabela tendem a ser mais fáceis), então é descritiva, não causal.
 
@@ -431,7 +435,7 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 
 ## 9. Execução e registro
 
-- Total: 1.147 perguntas × 6 condições × 2 modelos = **13.764 gerações** (cerca de 28 h de GPU L4 em bf16, pela latência do piloto).
+- Total: 1.147 perguntas × 6 condições × 2 modelos = **13.764 gerações** (cerca de 28 h de GPU L4 em bf16, pela latência do piloto). Na execução real, em 22/11/2026, foram cerca de 5 h por modelo em GPU A100, com os dois modelos em paralelo.
 - **Checkpoints.** Tudo o que é gerado fica na pasta `NLP - Checkpoints/results` do Google Drive (nome em `DRIVE_FOLDER`, em `src/finrag.py`): um JSONL por modelo × condição, gravado **a cada lote** (4 perguntas), mais os arquivos de estado (`frozen_config.json`, `pilot_dev/revisions.json`, um arquivo por sessão em `test/sessions/`). Se a sessão do Colab cair, basta abrir o notebook e rodar de novo: as perguntas já gravadas são puladas, um modelo completo nem é carregado, e perde-se no máximo o lote em andamento. Uma linha cortada no fim do arquivo é ignorada e refeita; os arquivos de estado são gravados em arquivo temporário e trocados no fim. `tests/test_retomada.py` simula três quedas seguidas e confere que o resultado é idêntico ao de uma execução sem interrupção.
 - Campos de cada registro: `id`, `model`, `rep`, `k`, `prompt_tokens`, `context_tokens`, `output_tokens`, `raw_output`, `parsed_answer`, `format_ok`, `correct_strict`, `correct_lenient`, `error_type`, `latency_s`, e também `split`, `code`, `hit_max_new_tokens`, `batch_size`, `precision` e `prompt_hash`.
 - **Código não commitado.** O congelamento e cada sessão do teste gravam, além do commit, se havia arquivo modificado sem commit (`git_dirty`). Resultado gerado assim não é reproduzível e não entra no estudo.
@@ -451,6 +455,8 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 - Se a execução for em 4 bits, os resultados absolutos ficam abaixo dos de bf16; a comparação **entre representações dentro do mesmo modelo** continua válida.
 - São dois modelos, um de cada porte. O que for igual nos dois é um indício de generalidade; o que diferir não pode ser atribuído só ao tamanho, porque os modelos também diferem em família e treinamento.
 - A heurística de tipo de erro é aproximada e validada por amostra.
+- Cada condição rodou uma vez. Não há repetição com o mesmo prompt, então o ruído entre execuções não foi medido; os testes pareados continuam válidos, mas diferenças de 1 a 2 pontos não devem ser interpretadas (acrescentado depois do teste).
+- Depois dos resultados, o notebook 04 recebeu a seção 10, com análises exploratórias, e teve um rótulo corrigido (`sem_resposta_legivel` no lugar de `falha_formato`, que incluía recusas). Nenhum número das seções pré-definidas mudou, e nenhuma análise exploratória entra nos vereditos das hipóteses.
 - A V7 foi redefinida depois de ver o piloto (seção 6.3). É um critério de aptidão do prompt, aplicado só ao dev; não entra em nenhum resultado do teste. A definição original (qualquer saída sem resposta legível < 5%) reprovaria o Qwen3 (5,3%) e o Llama (6,7%) por comportamentos que não são falha de formato.
 - O limite de 512 tokens corta saídas que ainda não chegaram à resposta. No piloto isso não ocorreu com os dois modelos do estudo em R1 (ocorreu em 7% das saídas do Llama, que ficou fora). Se ocorrer no teste, a saída conta como erro e aparece no desfecho `cortada`.
 - O piloto de 150 perguntas não tem nenhuma pergunta de sim/não (20 no teste); o formato delas foi conferido só na comparação de lembretes (4 perguntas por modelo).
@@ -491,7 +497,8 @@ As verificações já pegaram três defeitos que mudariam os resultados: a ordem
 | Módulo compartilhado `src/finrag.py`, idêntico ao notebook 01 nas partes copiadas | feito (`tests/test_consistencia.py` passa) |
 | Prompt e few-shot (V5) | feito (notebook 02); V5 passa. Lembrete de formato acrescentado depois da primeira rodada na GPU |
 | Tokens totais de entrada, por modelo × representação | código pronto (notebook 02); é regravado junto com o congelamento |
-| Piloto no dev (V7), tokens de saída, congelamento | piloto feito em bf16 (L4) com o prompt `bd940bbf`: os dois modelos passam na V7. **Falta regravar o `frozen_config.json`** (notebook 02, sem GPU) |
+| Piloto no dev (V7), tokens de saída, congelamento | feito: piloto em bf16 (L4) com o prompt `bd940bbf`, os dois modelos passam na V7; congelamento regravado em 22/11/2026, antes do teste |
 | Checkpoints no Google Drive e retomada | feito; `tests/test_retomada.py` passa |
-| Inferência no teste, com retomada | código pronto (notebook 03); **falta rodar na GPU** |
-| Análise estatística, cortes, tipo de erro, custo | código pronto (notebook 04), testado só com resultados sintéticos; **falta rodar com os resultados reais** |
+| Inferência no teste, com retomada | feito em 22/11/2026: 13.764 gerações em bf16 (GPU A100), uma sessão por modelo, sem queda |
+| Análise estatística, cortes, tipo de erro, custo | feito: [RESULTADOS.md](RESULTADOS.md). A seção 10 do notebook 04 (exploratória) foi acrescentada depois dos resultados |
+| Conferência manual de 50 erros por modelo | **falta a conferência por uma pessoa**; há uma checagem do assistente (RESULTADOS.md, seção 8.2) |
