@@ -36,7 +36,9 @@ O piloto com o prompt do repositório (hash `bd940bbf875bc8e1`) já rodou em bf1
 O que o notebook faz se a pasta estiver errada:
 
 - `pilot_dev` com arquivos de outro prompt ou outra precisão → para com uma mensagem, **antes de gerar qualquer coisa**;
-- `pilot_dev` vazia ou incompleta em ambiente sem GPU, ou com GPU de menos de 22 GB → para e pede a GPU certa.
+- `pilot_dev` vazia ou incompleta → para e avisa que o piloto já existe e que a pasta montada (ou o nome da pasta) deve estar errada. Ele **não** gera um piloto novo, a menos que `ALLOW_NEW_PILOT = True` seja definido de propósito.
+
+Atenção: existem duas pastas `NLP - Checkpoints` no Drive. A que tem o piloto é a que contém `results/pilot_dev_old_bd940bbf/`; a outra só tem os experimentos iniciais. Deixe uma só com esse nome, ou o notebook pode montar a errada.
 
 Os arquivos do Llama que estão na pasta do piloto são ignorados. As outras pastas `pilot_dev_old_*` são de versões de prompt descartadas, que não estão no repositório; não são usadas e podem ser arquivadas.
 
@@ -53,7 +55,7 @@ O estudo é em **bf16**, a precisão do piloto, e o notebook 03 recusa uma GPU e
 | GPU T4 | 16 GB | **Não usar**: bf16 não cabe |
 | TPU v5e-1 / v6e-1 | 16 / 32 GB | **Não usar.** O código usa PyTorch com CUDA, e na TPU a geração recompila a cada tamanho de prompt (avaliação pela documentação, sem medir) |
 
-**Rode as seis condições de um mesmo modelo no mesmo tipo de GPU.** A comparação do estudo é entre representações dentro de cada modelo; a GPU de cada sessão fica registrada em `test/sessions.jsonl`.
+**Rode as seis condições de um mesmo modelo no mesmo tipo de GPU.** A comparação do estudo é entre representações dentro de cada modelo; a GPU de cada sessão fica registrada em um arquivo próprio em `test/sessions/`.
 
 ### Tempo
 
@@ -82,13 +84,14 @@ O teste pode ser dividido em quantas sessões forem necessárias, e os dois mode
 1. *Ambiente de execução → Executar tudo*. Autorize o acesso ao Google Drive quando o Colab pedir.
 2. Confira a primeira célula: `Resultados em:` tem de apontar para `.../NLP - Checkpoints/results`. Se ela parar com `Pasta 'NLP - Checkpoints' não encontrada`, o atalho não foi criado.
 3. A seção 1 confere que o código é o do congelamento (todas as linhas com `OK`). A seção 2 mostra o andamento: perguntas já gravadas por modelo × condição.
-4. A seção 3 gera as respostas, um modelo por vez: primeiro o Qwen3-8B, depois o Phi-4-mini. Para rodar um só (por exemplo, para dividir entre duas sessões), troque na célula de configuração:
+4. No começo da seção 3, cada modelo passa por um teste de memória com o prompt mais longo de cada condição. Se a sessão parar aí com erro de memória, a GPU é pequena para esse modelo: use A100 ou G4.
+5. A seção 3 gera as respostas, um modelo por vez: primeiro o Qwen3-8B, depois o Phi-4-mini. Para rodar um só (por exemplo, para dividir entre duas sessões), troque na célula de configuração:
 
    ```python
    MODELS_TO_RUN = ["phi4-mini"]        # ou ["qwen3-8b"]; None roda os dois, nessa ordem
    ```
 
-5. Termina quando a seção 4 mostra `Tudo completo.` Os resultados já estão no Drive; não há nada para enviar.
+6. Termina quando a seção 4 mostra `Tudo completo.` Os resultados já estão no Drive; não há nada para enviar.
 
 ## 5. Se a sessão cair
 
@@ -122,5 +125,5 @@ Na pasta `NLP - Checkpoints/results`:
 | `tokens_prompt_test.csv` | tokens de entrada por pergunta, modelo e representação |
 | `frozen_config.json` | prompt, precisão, lote e modelos congelados |
 | `test/<modelo>__<representação>.jsonl` | respostas do teste (uma linha por pergunta) |
-| `test/sessions.jsonl` | GPU, versões e commit de cada sessão |
+| `test/sessions/<data>_<modelos>.json` | GPU, versões e commit de cada sessão (um arquivo por sessão) |
 | `analise/` | tabelas e figuras do notebook 04 |
